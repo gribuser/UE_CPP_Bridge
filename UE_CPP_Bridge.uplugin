@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "UE_CPP_Bridge",
+	"Description": "Utility for cross-compilable code",
+	"Category": "Other",
+	"CreatedBy": "Dmitry Gribov",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UE_CPP_Bridge",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
