@@ -1,9 +1,11 @@
 #pragma once
-#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 0
+#include "UE_CPP_Bridge_Setup.h"
+
+#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
 #include <vector>
 #include <random>
 #include <algorithm>
-#elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
+#elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 2
 #include "CoreMinimal.h"
 #else
 static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
@@ -13,7 +15,7 @@ namespace UE_CPP_Bridge {
 
 template<typename InElementType>
 
-#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 0
+#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
 class TBridgeArray: public std::vector<InElementType> {
 public:
 	using std::vector<InElementType>::vector;
@@ -98,7 +100,7 @@ public:
 		std::mt19937 g(rd());
 		std::shuffle(begin(), end(), g);
 	}
-#elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
+#elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 2
 class TBridgeArray: public TArray<InElementType> {
 public:
 	using TArray<InElementType>::TArray;

@@ -1,12 +1,12 @@
 #pragma once
 #include "UE_BridgeLocking.h"
+#include "UE_BridgeArray.h"
 #include <thread>
 #include <sstream>
 #include <map>
-#include "UE_BridgeArray.h"
 
 namespace UE_CPP_Bridge {
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 
 std::string StreamString() {
 	std::stringstream ss;

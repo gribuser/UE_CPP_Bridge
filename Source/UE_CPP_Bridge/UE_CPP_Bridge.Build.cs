@@ -11,7 +11,7 @@ public class UE_CPP_Bridge : ModuleRules
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
-				Path.Combine(ModuleDirectory,"Public"),
+				//Path.Combine(ModuleDirectory,"Public"),
 				// ... add public include paths required here ...
 			}
 			);

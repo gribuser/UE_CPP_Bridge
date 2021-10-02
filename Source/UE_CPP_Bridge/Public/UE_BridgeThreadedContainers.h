@@ -1,4 +1,5 @@
 #pragma once
+#include "UE_CPP_Bridge_Setup.h"
 #include "CoreMinimal.h"
 #include "UE_BridgeLocking.h"
 #include "UE_BridgeArray.h"
@@ -9,9 +10,9 @@ namespace UE_CPP_Bridge {
 
 // Enchanced with locking/unlocking functions array
 template<typename InElementType>
-class TThreadedArray: public TP2PArray<InElementType>, public FCriticalSectionReadable {
+class TThreadedArray: public TBridgeArray<InElementType>, public FThreadsafeReadable {
 public:
-	using TP2PArray<InElementType>::TP2PArray;
+	using TBridgeArray<InElementType>::TP2PArray;
 	bool ThreadSafeContains(const InElementType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);
@@ -27,9 +28,9 @@ public:
 };
 
 template<typename InKeyType, typename InElementType>
-class TThreadedMap: public TP2PMap<InKeyType, InElementType>, public FCriticalSectionReadable {
+class TThreadedMap: public TBridgeMap<InKeyType, InElementType>, public FThreadsafeReadable {
 public:
-	using TP2PMap<InKeyType, InElementType>::TP2PMap;
+	using TBridgeMap<InKeyType, InElementType>::TP2PMap;
 	bool ThreadSafeContains(const InKeyType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);
@@ -45,9 +46,9 @@ public:
 };
 
 template<typename InElementType>
-class TThreadedSet: public TP2PSet<InElementType>, public FCriticalSectionReadable {
+class TThreadedSet: public TBridgeSet<InElementType>, public FThreadsafeReadable {
 public:
-	using TP2PSet<InElementType>::TP2PSet;
+	using TBridgeSet<InElementType>::TP2PSet;
 	bool ThreadSafeContains(const InElementType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);
