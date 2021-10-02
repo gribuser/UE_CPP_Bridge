@@ -31,7 +31,7 @@ public:
 	FThreadsafeReadable(int ADebugLogN):DebugLogN(ADebugLogN) {}
 #endif
 	~FThreadsafeReadable() {
-		dev_check(FreeState());
+		UE_CPP_BRIDGE_DEV_TRAP(FreeState());
 		WaitForFreeState();
 	}
 	void AcquireLock() const {
@@ -55,7 +55,7 @@ public:
 			FPlatformProcess::Sleep(0.000001);
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS
 			i++;
-			dev_check(i % 100000 == 0);
+			UE_CPP_BRIDGE_DEV_TRAP(i % 100000 == 0);
 #endif
 		}
 	}
@@ -99,7 +99,7 @@ public:
 			FPlatformProcess::Sleep(0.000001);
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS
 			i++;
-			dev_check(i % 10000000 != 0);
+			UE_CPP_BRIDGE_DEV_TRAP(i % 10000000 != 0);
 #endif
 		}
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS
