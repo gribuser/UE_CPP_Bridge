@@ -47,7 +47,7 @@ public:
 template<typename InElementType>
 class TThreadedSet: public TSet<InElementType>, public FThreadsafeReadable {
 public:
-	using TSet<InElementType>::TMap;
+	using TSet<InElementType>::TSet;
 	bool ThreadSafeContains(const InElementType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);
