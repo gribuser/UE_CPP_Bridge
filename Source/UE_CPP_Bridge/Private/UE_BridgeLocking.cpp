@@ -14,24 +14,24 @@ std::string StreamString() {
 	return ss.str();
 }
 
-// Could not make this work with UE TMap, so std::map will do well anyway
-std::map<std::thread::id, UE_CPP_Bridge::TBridgeArray<const FThreadsafeReadable*>> LocksLog;
-std::map<std::thread::id, UE_CPP_Bridge::TBridgeArray<bool>> RWLog;
+// Could not make thread::id work with UE TMap, so std::map will do well anyway
+std::map<std::thread::id, TArray<const FThreadsafeReadable*>> LocksLog;
+std::map<std::thread::id, TArray<bool>> RWLog;
 FCriticalSection LockingDiagnosticsMapLock;
 
 void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 	FScopeLock ScopeLock(&LockingDiagnosticsMapLock);
 	std::thread::id MyThreadID = std::this_thread::get_id();
 	auto SearchResult = LocksLog.find(MyThreadID);
-	UE_CPP_Bridge::TBridgeArray<const FThreadsafeReadable*>* ThreadRec;
-	UE_CPP_Bridge::TBridgeArray<bool>* RWRec;
+	TArray<const FThreadsafeReadable*>* ThreadRec;
+	TArray<bool>* RWRec;
 	if (SearchResult != LocksLog.end()) {
 		ThreadRec = &SearchResult->second;
 		RWRec = &RWLog[MyThreadID];
 	} else {
-		auto InsertResult1 = LocksLog.emplace( MyThreadID, UE_CPP_Bridge::TBridgeArray<FThreadsafeReadable*>() );
+		auto InsertResult1 = LocksLog.emplace( MyThreadID, TArray<FThreadsafeReadable*>() );
 		ThreadRec = &InsertResult1.first->second;
-		auto InsertResult2 = RWLog.emplace( MyThreadID, UE_CPP_Bridge::TBridgeArray<bool>() );
+		auto InsertResult2 = RWLog.emplace( MyThreadID, TArray<bool>() );
 		RWRec = &InsertResult2.first->second;
 	}
 	int ExistingLockN = ThreadRec->Find(Caller);
@@ -67,7 +67,7 @@ void LockOut(const FThreadsafeReadable* Caller) {
 	std::thread::id MyThreadID = std::this_thread::get_id();
 	auto SearchResult = LocksLog.find(MyThreadID);
 	if (SearchResult != LocksLog.end()) {
-		UE_CPP_Bridge::TBridgeArray<const FThreadsafeReadable*>* ThreadRec = &SearchResult->second;
+		TArray<const FThreadsafeReadable*>* ThreadRec = &SearchResult->second;
 		int ThisLockN = ThreadRec->Find(Caller);
 		UE_CPP_BRIDGE_DEV_TRAP(ThisLockN != INDEX_NONE);
 

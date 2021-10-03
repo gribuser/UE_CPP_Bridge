@@ -10,9 +10,9 @@ namespace UE_CPP_Bridge {
 
 // Enchanced with locking/unlocking functions array
 template<typename InElementType>
-class TThreadedArray: public TBridgeArray<InElementType>, public FThreadsafeReadable {
+class TThreadedArray: public TArray<InElementType>, public FThreadsafeReadable {
 public:
-	using TBridgeArray<InElementType>::TP2PArray;
+	using TArray<InElementType>::TP2PArray;
 	bool ThreadSafeContains(const InElementType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);
@@ -28,9 +28,9 @@ public:
 };
 
 template<typename InKeyType, typename InElementType>
-class TThreadedMap: public TBridgeMap<InKeyType, InElementType>, public FThreadsafeReadable {
+class TThreadedMap: public TMap<InKeyType, InElementType>, public FThreadsafeReadable {
 public:
-	using TBridgeMap<InKeyType, InElementType>::TP2PMap;
+	using TMap<InKeyType, InElementType>::TP2PMap;
 	bool ThreadSafeContains(const InKeyType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);
@@ -46,9 +46,9 @@ public:
 };
 
 template<typename InElementType>
-class TThreadedSet: public TBridgeSet<InElementType>, public FThreadsafeReadable {
+class TThreadedSet: public TSet<InElementType>, public FThreadsafeReadable {
 public:
-	using TBridgeSet<InElementType>::TP2PSet;
+	using TSet<InElementType>::TP2PSet;
 	bool ThreadSafeContains(const InElementType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);

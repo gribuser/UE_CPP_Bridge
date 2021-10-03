@@ -9,11 +9,11 @@ static_assert(0, "Not implemented yet");
 static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
 #endif
 
-namespace UE_CPP_Bridge {
-
+// We emulate base UE's TMap functionality with std::*
+#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
 template<typename InElementType>
-class TBridgeSet: public TSet<InElementType> {
+class TMap: public std::set<InElementType> {
 public:
 	using TSet<InElementType>::TSet;
 };
-};
+#endif

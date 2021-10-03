@@ -11,12 +11,10 @@
 static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
 #endif
 
-namespace UE_CPP_Bridge {
-
-template<typename InElementType>
-
+// We emulate base UE's TArray functionality with std::*
 #if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
-class TBridgeArray: public std::vector<InElementType> {
+template<typename InElementType>
+class TArray: public std::vector<InElementType> {
 public:
 	using std::vector<InElementType>::vector;
 	size_t Num() const { return size(); }
@@ -100,21 +98,8 @@ public:
 		std::mt19937 g(rd());
 		std::shuffle(begin(), end(), g);
 	}
+};
 #elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 2
-class TBridgeArray: public TArray<InElementType> {
-public:
-	using TArray<InElementType>::TArray;
-	void Shuffle() {
-		for (int i = Num() - 1; i > 0; i--) {
-			int j = FMath::RandRange(0, Num()-1);
-			InElementType temp = (*this)[i];
-			(*this)[i] = (*this)[j];
-			(*this)[j] = temp;
-		}
-	}
 #else
 static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
 #endif
-};
-
-};
