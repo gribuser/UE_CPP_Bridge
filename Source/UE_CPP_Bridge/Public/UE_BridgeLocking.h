@@ -132,4 +132,26 @@ public:
 	//	}
 };
 
+class FReadableScopeLockRead {
+public:
+	const FThreadsafeReadable* Section;
+	FReadableScopeLockRead(const FThreadsafeReadable* ASection) :Section(ASection) {
+		check(Section);
+		Section->BeginRead();
+	}
+	~FReadableScopeLockRead() {
+		Section->EndRead();
+	}
+};
+class FReadableScopeLockWrite{
+public:
+	FThreadsafeReadable* Section;
+	FReadableScopeLockWrite(FThreadsafeReadable* ASection) :Section(ASection) {
+		check(Section);
+		Section->BeginWrite();
+	}
+	~FReadableScopeLockWrite() {
+		Section->EndWrite();
+	}
+};
 };

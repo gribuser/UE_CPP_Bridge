@@ -1,6 +1,5 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
-#include "CoreMinimal.h"
 #include "UE_BridgeLocking.h"
 #include "UE_BridgeArray.h"
 #include "UE_BridgeMap.h"
@@ -12,7 +11,7 @@ namespace UE_CPP_Bridge {
 template<typename InElementType>
 class TThreadedArray: public TArray<InElementType>, public FThreadsafeReadable {
 public:
-	using TArray<InElementType>::TP2PArray;
+	using TArray<InElementType>::TArray;
 	bool ThreadSafeContains(const InElementType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);
@@ -30,7 +29,7 @@ public:
 template<typename InKeyType, typename InElementType>
 class TThreadedMap: public TMap<InKeyType, InElementType>, public FThreadsafeReadable {
 public:
-	using TMap<InKeyType, InElementType>::TP2PMap;
+	using TMap<InKeyType, InElementType>::TMap;
 	bool ThreadSafeContains(const InKeyType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);
@@ -48,7 +47,7 @@ public:
 template<typename InElementType>
 class TThreadedSet: public TSet<InElementType>, public FThreadsafeReadable {
 public:
-	using TSet<InElementType>::TP2PSet;
+	using TSet<InElementType>::TMap;
 	bool ThreadSafeContains(const InElementType& Item) const {
 		BeginRead();
 		bool Out = Contains(Item);
