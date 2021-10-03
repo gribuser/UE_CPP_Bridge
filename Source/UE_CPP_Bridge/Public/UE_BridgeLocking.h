@@ -19,7 +19,7 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write);
 void LockOut(const FThreadsafeReadable* Caller);
 #endif
 
-class FThreadsafeReadable {
+class UE_CPP_BRIDGE_API FThreadsafeReadable {
 private:
 	mutable FThreadSafeCounter ReadersNum;
 	mutable FCriticalSection WriteLock;
@@ -48,6 +48,7 @@ public:
 		WriteLock.Lock();
 #endif
 	}
+	// review me: do we need this WaitForFreeState at all, what's this???
 	void WaitForFreeState() {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 		int i = 0;
@@ -60,7 +61,13 @@ public:
 #endif
 		}
 	}
-	bool FreeState() { return ReadersNum.GetValue() == 0 && !Locked; }
+	bool FreeState() {
+		return ReadersNum.GetValue() == 0
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+			&& !Locked
+#endif
+			;
+	}
 	void BeginRead() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>  BeginRead"),DebugLogN));

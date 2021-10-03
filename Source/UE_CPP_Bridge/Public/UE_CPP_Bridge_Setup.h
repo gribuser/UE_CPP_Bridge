@@ -25,7 +25,11 @@
 
 /// Should we check for the possible deadlocks for our mutex? Remember to turn it off in production
 #ifndef WITH_THREAD_INTERLOCKING_DIAGNOSTICS
-	#define WITH_THREAD_INTERLOCKING_DIAGNOSTICS 1
+	#if UE_BUILD_SHIPPING
+		#define WITH_THREAD_INTERLOCKING_DIAGNOSTICS 0
+	#else
+		#define WITH_THREAD_INTERLOCKING_DIAGNOSTICS 1
+	#endif
 #endif
 
 /// Deadlock detection and other dev-diagnostics call this template to fire this
