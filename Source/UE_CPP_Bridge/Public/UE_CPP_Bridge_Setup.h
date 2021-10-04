@@ -37,3 +37,7 @@
 #ifndef UE_CPP_BRIDGE_DEV_TRAP
 	#define UE_CPP_BRIDGE_DEV_TRAP(Val) check(Val);
 #endif
+
+// Used to switch on|off autotests in UE
+#define WITH_DEV_AUTOMATION_TESTS_X 1
+//#define WITH_DEV_AUTOMATION_TESTS_X WITH_DEV_AUTOMATION_TESTS
