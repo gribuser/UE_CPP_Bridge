@@ -139,7 +139,7 @@ public:
 	//	}
 };
 
-class FReadableScopeLockRead {
+class UE_CPP_BRIDGE_API FReadableScopeLockRead {
 public:
 	const FThreadsafeReadable* Section;
 	FReadableScopeLockRead(const FThreadsafeReadable* ASection) :Section(ASection) {
@@ -150,7 +150,7 @@ public:
 		Section->EndRead();
 	}
 };
-class FReadableScopeLockWrite{
+class UE_CPP_BRIDGE_API FReadableScopeLockWrite{
 public:
 	FThreadsafeReadable* Section;
 	FReadableScopeLockWrite(FThreadsafeReadable* ASection) :Section(ASection) {

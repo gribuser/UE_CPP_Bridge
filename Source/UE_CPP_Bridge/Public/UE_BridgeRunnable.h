@@ -7,7 +7,7 @@
 #endif
 
 namespace UE_CPP_Bridge {
-class FFInishibleRunnable: public FRunnable {
+class UE_CPP_BRIDGE_API FFInishibleRunnable: public FRunnable {
 public:
 	bool Finished = false;
 	bool bStopThread = false;
