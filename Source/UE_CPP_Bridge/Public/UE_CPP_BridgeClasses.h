@@ -5,3 +5,10 @@
 #include "UE_BridgeRunnable.h"
 #include "UE_BridgeLocking.h"
 #include "UE_BridgeThreadedContainers.h"
+
+// implemen me ASAP: this stuff is not moved here properly yet:
+#include "Misc/Crc.h"
+#include "Misc/DateTime.h"
+#include "Templates/SharedPointer.h"
+#include "HAL/RunnableThread.h"
+#include "Misc/ByteSwap.h"
