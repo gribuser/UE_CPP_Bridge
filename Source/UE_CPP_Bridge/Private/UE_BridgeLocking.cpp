@@ -60,6 +60,22 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 	}
 	ThreadRec->Add(Caller);
 	RWRec->Add(Write);
+	// Just to make compiler link it
+	if (0) WhoIsLocking(NULL);
+}
+
+std::list<std::thread::id> WhoIsLocking(const FThreadsafeReadable* Caller) {
+	std::list<std::thread::id> Out;
+	for (auto& Thread : LocksLog) {
+		for (const FThreadsafeReadable* LockPointer : Thread.second) {
+			if (Caller == LockPointer) {
+				Out.push_back(Thread.first);
+//				goto NEXTTHREAD;
+			}
+		}
+//		NEXTTHREAD:;
+	}
+	return Out;
 }
 
 void LockOut(const FThreadsafeReadable* Caller) {

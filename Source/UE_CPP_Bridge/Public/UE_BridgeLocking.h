@@ -1,6 +1,8 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
-
+#include <string>
+#include <thread>
+#include <list>
 #if UE_CPP_BRIDGE_MUTEX_CLASSES_MODE == 1
 #include <mutex>
 #include <atomic>
@@ -26,7 +28,7 @@ private:
 public:
 	FThreadsafeReadable() {}
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-	bool Locked = false;
+	mutable bool Locked = false;
 	int DebugLogN = 0;
 	int RNum() { return ReadersNum.GetValue(); }
 	FThreadsafeReadable(int ADebugLogN):DebugLogN(ADebugLogN) {}
@@ -37,13 +39,13 @@ public:
 	}
 	void AcquireLock() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		WriteLock.Lock();
-		//int i = 0;
-		//while (!WriteLock.TryLock()) {
-		//	FPlatformProcess::Sleep(0.00001);
-		//	i++;
-		//	dev_check(i % 1000000 != 0);
-		//}
+		//WriteLock.Lock();
+		int i = 0;
+		while (!WriteLock.TryLock()) {
+			FPlatformProcess::Sleep(0.001);
+			i++;
+			UE_CPP_BRIDGE_DEV_TRAP(i % 100000 != 0);
+		}
 #else
 		WriteLock.Lock();
 #endif
@@ -91,7 +93,7 @@ public:
 #endif
 	}
 
-	void BeginWrite() {
+	void BeginWrite() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>  BeginWrite"),DebugLogN));
 		int64 i = 0;
@@ -115,7 +117,7 @@ public:
 #endif
 	}
 
-	void EndWrite() {
+	void EndWrite() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i<< EndWrite"),DebugLogN));
 		LockOut(this);
@@ -161,4 +163,5 @@ public:
 		Section->EndWrite();
 	}
 };
+std::list<std::thread::id> UE_CPP_BRIDGE_API WhoIsLocking(const FThreadsafeReadable* Caller);
 };
