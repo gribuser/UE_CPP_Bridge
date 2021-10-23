@@ -27,8 +27,11 @@ private:
 	mutable FCriticalSection WriteLock;
 public:
 	FThreadsafeReadable() {}
+	mutable bool bMultyLockEnabled = false;
+	mutable int LocksNum = 0;
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-	mutable bool Locked = false;
+	static const std::thread::id ZeroThread;
+	mutable std::thread::id LockedBy;
 	int DebugLogN = 0;
 	int RNum() { return ReadersNum.GetValue(); }
 	FThreadsafeReadable(int ADebugLogN):DebugLogN(ADebugLogN) {}
@@ -49,6 +52,11 @@ public:
 #else
 		WriteLock.Lock();
 #endif
+		if (bMultyLockEnabled) { LocksNum++; }
+	}
+	void ReleaseLock() const {
+		if (bMultyLockEnabled) { LocksNum--; }
+		if (LocksNum == 0) { WriteLock.Unlock(); }
 	}
 	// review me: do we need this WaitForFreeState at all, what's this???
 	void WaitForFreeState() {
@@ -66,7 +74,7 @@ public:
 	bool FreeState() {
 		return ReadersNum.GetValue() == 0
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-			&& !Locked
+			&& LockedBy == ZeroThread
 #endif
 			;
 	}
@@ -77,7 +85,7 @@ public:
 #endif
 		AcquireLock();
 		ReadersNum.Increment();
-		WriteLock.Unlock();
+		ReleaseLock();
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>> BeginRead"),DebugLogN));
 #endif
@@ -92,6 +100,9 @@ public:
 		LockOut(this);
 #endif
 	}
+	bool IsLocked() {
+		return LockedBy == std::this_thread::get_id();
+	}
 
 	void BeginWrite() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
@@ -102,8 +113,8 @@ public:
 		AcquireLock();
 
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		check(!Locked);
-		Locked = true;
+		check(LockedBy == ZeroThread);
+		LockedBy = std::this_thread::get_id();
 #endif
 		while (ReadersNum.GetValue() > 0) {
 			FPlatformProcess::Sleep(0.000001);
@@ -121,10 +132,10 @@ public:
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i<< EndWrite"),DebugLogN));
 		LockOut(this);
-		check(Locked);
-		Locked = false;
+		check(LockedBy == std::this_thread::get_id());
+		LockedBy = ZeroThread;
 #endif
-		WriteLock.Unlock();
+		ReleaseLock();
 	}
 	//	bool TryBeginWrite() {
 	//#if !UE_BUILD_SHIPPING

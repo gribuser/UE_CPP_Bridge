@@ -1,7 +1,6 @@
 #pragma once
 #include "UE_BridgeLocking.h"
 #include "UE_BridgeArray.h"
-#include <thread>
 #include <sstream>
 #include <map>
 
@@ -18,6 +17,8 @@ std::string StreamString() {
 std::map<std::thread::id, TArray<const FThreadsafeReadable*>> LocksLog;
 std::map<std::thread::id, TArray<bool>> RWLog;
 FCriticalSection LockingDiagnosticsMapLock;
+
+const std::thread::id FThreadsafeReadable::ZeroThread;
 
 void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 	FScopeLock ScopeLock(&LockingDiagnosticsMapLock);
@@ -36,7 +37,7 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 	}
 	int ExistingLockN = ThreadRec->Find(Caller);
 	// This thread had locked this mutex already
-	UE_CPP_BRIDGE_DEV_TRAP(ExistingLockN == INDEX_NONE || !(*RWRec)[ExistingLockN] && !Write);
+	UE_CPP_BRIDGE_DEV_TRAP(Caller->bMultyLockEnabled || ExistingLockN == INDEX_NONE || !(*RWRec)[ExistingLockN] && !Write);
 
 	for (size_t i = 0; i < ThreadRec->Num(); i++) {
 		const FThreadsafeReadable* PrevLocker = (*ThreadRec)[i];
