@@ -94,6 +94,7 @@ std::list<std::thread::id> WhoIsLocking(const FThreadsafeReadable* Caller) {
 }
 
 void LockOut(const FThreadsafeReadable* Caller) {
+	if (Caller->LocksNum > 1) { return; }
 	FScopeLock ScopeLock(&LockingDiagnosticsMapLock);
 	std::thread::id MyThreadID = std::this_thread::get_id();
 	auto SearchResult = LocksLog.find(MyThreadID);
