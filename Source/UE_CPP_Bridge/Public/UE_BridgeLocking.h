@@ -19,6 +19,8 @@ namespace UE_CPP_Bridge {
 class FThreadsafeReadable;
 void LockIn(const FThreadsafeReadable* Caller, bool Write);
 void LockOut(const FThreadsafeReadable* Caller);
+const int64 TrapLongLocksAt = 10000000 * 0.5;			// 0.5sec lock wait is kind of abnormal (to say the least)
+const int64 TrapIgnoresLocksAfter = 10000000 * 2; // must be dubugger? We ignore this
 #endif
 
 class UE_CPP_BRIDGE_API FThreadsafeReadable {
@@ -32,6 +34,8 @@ public:
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 	static const std::thread::id ZeroThread;
 	mutable std::thread::id LockedBy;
+	mutable std::thread::id UnlockedBy;
+	mutable int64 LockedAt;
 	int DebugLogN = 0;
 	int RNum() { return ReadersNum.GetValue(); }
 	FThreadsafeReadable(int ADebugLogN):DebugLogN(ADebugLogN) {}
@@ -43,11 +47,12 @@ public:
 	void AcquireLock() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 		//WriteLock.Lock();
-		int i = 0;
-		while (!WriteLock.TryLock()) {
-			FPlatformProcess::Sleep(0.001);
-			i++;
-			UE_CPP_BRIDGE_DEV_TRAP(i % 100000 != 0);
+		int64 TryLockAt = FDateTime::UtcNow().GetTicks();
+		WriteLock.Lock();
+		if (LocksNum == 0) {
+			LockedAt = FDateTime::UtcNow().GetTicks();
+			int64 LockingTook = LockedAt - TryLockAt;
+			UE_CPP_BRIDGE_DEV_TRAP(LockingTook < TrapLongLocksAt || LockingTook > TrapIgnoresLocksAfter);
 		}
 #else
 		WriteLock.Lock();
@@ -56,7 +61,12 @@ public:
 	}
 	void ReleaseLock() const {
 		if (bMultyLockEnabled) { LocksNum--; }
-		if (LocksNum == 0) { WriteLock.Unlock(); }
+		if (LocksNum == 0) {
+			int64 LockedFor = FDateTime::UtcNow().GetTicks() - LockedAt;
+			WriteLock.Unlock();
+
+			UE_CPP_BRIDGE_DEV_TRAP(LockedFor < TrapLongLocksAt || LockedFor > TrapIgnoresLocksAfter);
+		}
 	}
 	// review me: do we need this WaitForFreeState at all, what's this???
 	void WaitForFreeState() {
@@ -133,6 +143,7 @@ public:
 		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i<< EndWrite"),DebugLogN));
 		LockOut(this);
 		check(LockedBy == std::this_thread::get_id());
+		UnlockedBy = LockedBy;
 		LockedBy = ZeroThread;
 #endif
 		ReleaseLock();
