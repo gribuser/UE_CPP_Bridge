@@ -19,7 +19,8 @@ namespace UE_CPP_Bridge {
 class FThreadsafeReadable;
 void LockIn(const FThreadsafeReadable* Caller, bool Write);
 void LockOut(const FThreadsafeReadable* Caller);
-const int64 TrapLongLocksAt = 10000000 * 0.5;			// 0.5sec lock wait is kind of abnormal (to say the least)
+const int64 TrapLongLocksAt = 10000000 * 0.2;			// 0.5sec lock wait is kind of abnormal (to say the least)
+const int64 TrapShortLocksAt = 10000000 * 0.05;			// 0.5sec lock wait is kind of abnormal (to say the least)
 const int64 TrapIgnoresLocksAfter = 10000000 * 2; // must be dubugger? We ignore this
 #endif
 
@@ -53,6 +54,7 @@ public:
 			LockedAt = FDateTime::UtcNow().GetTicks();
 			int64 LockingTook = LockedAt - TryLockAt;
 			UE_CPP_BRIDGE_DEV_TRAP(LockingTook < TrapLongLocksAt || LockingTook > TrapIgnoresLocksAfter);
+			UE_CPP_BRIDGE_DEV_TRAP(!bMultyLockEnabled || LockingTook < TrapShortLocksAt || LockingTook > TrapIgnoresLocksAfter);
 		}
 #else
 		WriteLock.Lock();
@@ -117,7 +119,6 @@ public:
 	void BeginWrite() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>  BeginWrite"),DebugLogN));
-		int64 i = 0;
 		LockIn(this, true);
 #endif
 		AcquireLock();
@@ -125,12 +126,13 @@ public:
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 		check(LockedBy == ZeroThread);
 		LockedBy = std::this_thread::get_id();
+		int64 WaitStartedAt = FDateTime::UtcNow().GetTicks();
 #endif
 		while (ReadersNum.GetValue() > 0) {
-			FPlatformProcess::Sleep(0.000001);
+			FPlatformProcess::Sleep(0.00001);
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-			i++;
-			UE_CPP_BRIDGE_DEV_TRAP(i % 10000000 != 0);
+			int64 Now = FDateTime::UtcNow().GetTicks();
+			UE_CPP_BRIDGE_DEV_TRAP(Now - WaitStartedAt < 500000);
 #endif
 		}
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
