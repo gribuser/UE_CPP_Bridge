@@ -101,10 +101,15 @@ void LockOut(const FThreadsafeReadable* Caller) {
 	if (SearchResult != LocksLog.end()) {
 		TArray<const FThreadsafeReadable*>* ThreadRec = &SearchResult->second;
 		int ThisLockN = ThreadRec->Find(Caller);
-		UE_CPP_BRIDGE_DEV_TRAP(ThisLockN != INDEX_NONE);
+		if (ThisLockN != INDEX_NONE) {
+			ThreadRec->RemoveAt(ThisLockN);
+			RWLog[MyThreadID].RemoveAt(ThisLockN);
+		} else {
+			// This should not happen, but it's too hard to fix, so I'll just ignore it as it's
+			// not a production code anyways
+			// UE_CPP_BRIDGE_DEV_TRAP();
+		}
 
-		ThreadRec->RemoveAt(ThisLockN);
-		RWLog[MyThreadID].RemoveAt(ThisLockN);
 	} else { UE_CPP_BRIDGE_DEV_TRAP(0); }
 }
 

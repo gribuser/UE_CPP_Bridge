@@ -24,6 +24,22 @@ public:
 		EndWrite();
 		return Out;
 	}
+	size_t SubstituteOrAdd(const InElementType& Item, const InElementType& Replaceable = NULL) {
+		UE_CPP_BRIDGE_DEV_TRAP(IsLocked());
+		for (size_t i = 0; i < Num(); i++) {
+			if ((*this)[i] == Replaceable) {
+				(*this)[i] = Item;
+				return i;
+			}
+		}
+		return Add(Item);
+	}
+	bool bIsReallyEmpty( const InElementType& Empty = NULL){
+		for (size_t i = 0; i < Num(); i++) {
+			if ((*this)[i] != Empty) { return false; }
+		}
+		return true;
+	}
 };
 
 template<typename InKeyType, typename InElementType>

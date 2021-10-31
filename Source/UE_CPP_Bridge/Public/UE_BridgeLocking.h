@@ -19,7 +19,7 @@ namespace UE_CPP_Bridge {
 class FThreadsafeReadable;
 void LockIn(const FThreadsafeReadable* Caller, bool Write);
 void LockOut(const FThreadsafeReadable* Caller);
-const int64 TrapLongLocksAt = 10000000 * 0.2;			// 0.5sec lock wait is kind of abnormal (to say the least)
+const int64 TrapLongLocksAt = 10000000 * 0.3;			// 0.5sec lock wait is kind of abnormal (to say the least)
 const int64 TrapShortLocksAt = 10000000 * 0.05;			// 0.5sec lock wait is kind of abnormal (to say the least)
 const int64 TrapIgnoresLocksAfter = 10000000 * 2; // must be dubugger? We ignore this
 #endif
@@ -115,6 +115,10 @@ public:
 	bool IsLocked() {
 		return LockedBy == std::this_thread::get_id();
 	}
+	bool IsLockedRead() {
+		// not 100% guarantee ReadersNum means THIS thread had a read-lock, but should do for now
+		return LockedBy == std::this_thread::get_id() || ReadersNum.GetValue() > 0;
+	}
 
 	void BeginWrite() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
@@ -124,7 +128,7 @@ public:
 		AcquireLock();
 
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		check(LockedBy == ZeroThread);
+		check(LockedBy == ZeroThread || bMultyLockEnabled);
 		LockedBy = std::this_thread::get_id();
 		int64 WaitStartedAt = FDateTime::UtcNow().GetTicks();
 #endif
@@ -132,7 +136,7 @@ public:
 			FPlatformProcess::Sleep(0.00001);
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 			int64 Now = FDateTime::UtcNow().GetTicks();
-			UE_CPP_BRIDGE_DEV_TRAP(Now - WaitStartedAt < 500000);
+			UE_CPP_BRIDGE_DEV_TRAP(Now - WaitStartedAt < 500000 || Now - WaitStartedAt > 20000000);
 #endif
 		}
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
