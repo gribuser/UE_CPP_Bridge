@@ -5,6 +5,10 @@
 #include <map>
 
 namespace UE_CPP_Bridge {
+#if WITH_ADDITIONAL_LOCKING_VARS
+const std::thread::id FThreadsafeReadable::ZeroThread;
+#endif
+
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 
 std::string StreamString() {
@@ -17,8 +21,6 @@ std::string StreamString() {
 std::map<std::thread::id, TArray<const FThreadsafeReadable*>> LocksLog;
 std::map<std::thread::id, TArray<bool>> RWLog;
 FCriticalSection LockingDiagnosticsMapLock;
-
-const std::thread::id FThreadsafeReadable::ZeroThread;
 
 void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 	FScopeLock ScopeLock(&LockingDiagnosticsMapLock);

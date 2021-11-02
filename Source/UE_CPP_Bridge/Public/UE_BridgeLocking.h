@@ -14,12 +14,21 @@ static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES
 #endif
 
 namespace UE_CPP_Bridge {
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1 || WITH_LONG_LOCKING_TRAPS == 1
+	#define WITH_ADDITIONAL_LOCKING_VARS 1
+#else
+	#define WITH_ADDITIONAL_LOCKING_VARS 0
+#endif
 
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 class FThreadsafeReadable;
 void LockIn(const FThreadsafeReadable* Caller, bool Write);
 void LockOut(const FThreadsafeReadable* Caller);
-const int64 TrapLongLocksAt = 10000000 * 0.3;			// 0.5sec lock wait is kind of abnormal (to say the least)
+#endif
+
+#if WITH_LONG_LOCKING_TRAPS == 1
+//const int64 TrapLongLocksAt = 10000000 * 0.3;			// 0.5sec lock wait is kind of abnormal (to say the least)
+const int64 TrapLongLocksAt = 10000000 * 2;			// 0.5sec lock wait is kind of abnormal (to say the least)
 const int64 TrapShortLocksAt = 10000000 * 0.05;			// 0.5sec lock wait is kind of abnormal (to say the least)
 const int64 TrapIgnoresLocksAfter = 10000000 * 2; // must be dubugger? We ignore this
 #endif
@@ -30,54 +39,70 @@ private:
 	mutable FCriticalSection WriteLock;
 public:
 	FThreadsafeReadable() {}
+#if WITH_ADDITIONAL_LOCKING_VARS
 	mutable bool bMultyLockEnabled = false;
+	int DebugLogN = 0;
 	mutable int LocksNum = 0;
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 	static const std::thread::id ZeroThread;
 	mutable std::thread::id LockedBy;
 	mutable std::thread::id UnlockedBy;
-	mutable int64 LockedAt;
-	int DebugLogN = 0;
-	int RNum() { return ReadersNum.GetValue(); }
 	FThreadsafeReadable(int ADebugLogN):DebugLogN(ADebugLogN) {}
 #endif
+
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+	int RNum() { return ReadersNum.GetValue(); }
+#endif
+
+#if WITH_LONG_LOCKING_TRAPS == 1
+	mutable int64 LockedAt;
+#endif
+
 	~FThreadsafeReadable() {
 		UE_CPP_BRIDGE_DEV_TRAP(FreeState());
 		WaitForFreeState();
 	}
 	void AcquireLock() const {
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		//WriteLock.Lock();
+#if WITH_LONG_LOCKING_TRAPS == 1
 		int64 TryLockAt = FDateTime::UtcNow().GetTicks();
+#endif
 		WriteLock.Lock();
+#if WITH_LONG_LOCKING_TRAPS == 1
 		if (LocksNum == 0) {
 			LockedAt = FDateTime::UtcNow().GetTicks();
 			int64 LockingTook = LockedAt - TryLockAt;
-			UE_CPP_BRIDGE_DEV_TRAP(LockingTook < TrapLongLocksAt || LockingTook > TrapIgnoresLocksAfter);
+			check(LockedBy == ZeroThread || bMultyLockEnabled);
+			LockedBy = std::this_thread::get_id();
+			UE_CPP_BRIDGE_DEV_TRAP(LockingTook < TrapLongLocksAt || LockingTook >= TrapIgnoresLocksAfter);
 			UE_CPP_BRIDGE_DEV_TRAP(!bMultyLockEnabled || LockingTook < TrapShortLocksAt || LockingTook > TrapIgnoresLocksAfter);
 		}
-#else
-		WriteLock.Lock();
 #endif
+#if WITH_ADDITIONAL_LOCKING_VARS == 1
 		if (bMultyLockEnabled) { LocksNum++; }
+#endif
 	}
 	void ReleaseLock() const {
+#if WITH_ADDITIONAL_LOCKING_VARS == 1
 		if (bMultyLockEnabled) { LocksNum--; }
+#endif
+#if WITH_LONG_LOCKING_TRAPS == 1
 		if (LocksNum == 0) {
 			int64 LockedFor = FDateTime::UtcNow().GetTicks() - LockedAt;
-			WriteLock.Unlock();
+			UnlockedBy = LockedBy;
+			LockedBy = ZeroThread;
 
-			UE_CPP_BRIDGE_DEV_TRAP(LockedFor < TrapLongLocksAt || LockedFor > TrapIgnoresLocksAfter);
+			UE_CPP_BRIDGE_DEV_TRAP(LockedFor < TrapLongLocksAt || LockedFor >= TrapIgnoresLocksAfter);
 		}
+#endif
+		WriteLock.Unlock();
 	}
 	// review me: do we need this WaitForFreeState at all, what's this???
 	void WaitForFreeState() {
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+#if WITH_LONG_LOCKING_TRAPS == 1
 		int i = 0;
 #endif
 		while (!FreeState()) {
 			FPlatformProcess::Sleep(0.000001);
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+#if WITH_LONG_LOCKING_TRAPS == 1
 			i++;
 			UE_CPP_BRIDGE_DEV_TRAP(i % 100000 == 0);
 #endif
@@ -98,59 +123,48 @@ public:
 		AcquireLock();
 		ReadersNum.Increment();
 		ReleaseLock();
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>> BeginRead"),DebugLogN));
-#endif
 	}
 	void EndRead() const {
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i<  EndRead"),DebugLogN));
-#endif
 		ReadersNum.Decrement();
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i<< EndRead"),DebugLogN));
 		LockOut(this);
 #endif
 	}
-	bool IsLocked() {
+#if WITH_ADDITIONAL_LOCKING_VARS
+	bool IsLocked(bool OkVal) {
 		return LockedBy == std::this_thread::get_id();
 	}
-	bool IsLockedRead() {
+	bool IsLockedRead(bool OkVal) {
 		// not 100% guarantee ReadersNum means THIS thread had a read-lock, but should do for now
 		return LockedBy == std::this_thread::get_id() || ReadersNum.GetValue() > 0;
 	}
+#else
+	bool IsLocked(bool OkVal = true) {return OkVal;}
+	bool IsLockedRead(bool OkVal = true) {return OkVal;}
+#endif
 
 	void BeginWrite() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>  BeginWrite"),DebugLogN));
 		LockIn(this, true);
 #endif
 		AcquireLock();
 
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		check(LockedBy == ZeroThread || bMultyLockEnabled);
-		LockedBy = std::this_thread::get_id();
+#if WITH_LONG_LOCKING_TRAPS == 1
 		int64 WaitStartedAt = FDateTime::UtcNow().GetTicks();
 #endif
 		while (ReadersNum.GetValue() > 0) {
 			FPlatformProcess::Sleep(0.00001);
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+#if WITH_LONG_LOCKING_TRAPS == 1
 			int64 Now = FDateTime::UtcNow().GetTicks();
-			UE_CPP_BRIDGE_DEV_TRAP(Now - WaitStartedAt < 500000 || Now - WaitStartedAt > 20000000);
+			UE_CPP_BRIDGE_DEV_TRAP(Now - WaitStartedAt < TrapLongLocksAt || Now - WaitStartedAt >= TrapIgnoresLocksAfter);
 #endif
 		}
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>> BeginWrite"),DebugLogN));
-#endif
 	}
 
 	void EndWrite() const {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i<< EndWrite"),DebugLogN));
 		LockOut(this);
 		check(LockedBy == std::this_thread::get_id());
-		UnlockedBy = LockedBy;
-		LockedBy = ZeroThread;
 #endif
 		ReleaseLock();
 	}
