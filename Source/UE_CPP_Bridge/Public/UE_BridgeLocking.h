@@ -70,11 +70,13 @@ public:
 		if (LocksNum == 0) {
 			LockedAt = FDateTime::UtcNow().GetTicks();
 			int64 LockingTook = LockedAt - TryLockAt;
-			check(LockedBy == ZeroThread || bMultyLockEnabled);
-			LockedBy = std::this_thread::get_id();
 			UE_CPP_BRIDGE_DEV_TRAP(LockingTook < TrapLongLocksAt || LockingTook >= TrapIgnoresLocksAfter);
 			UE_CPP_BRIDGE_DEV_TRAP(!bMultyLockEnabled || LockingTook < TrapShortLocksAt || LockingTook > TrapIgnoresLocksAfter);
 		}
+#endif
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+		check(LockedBy == ZeroThread || bMultyLockEnabled);
+		LockedBy = std::this_thread::get_id();
 #endif
 #if WITH_ADDITIONAL_LOCKING_VARS == 1
 		if (bMultyLockEnabled) { LocksNum++; }
@@ -84,13 +86,16 @@ public:
 #if WITH_ADDITIONAL_LOCKING_VARS == 1
 		if (bMultyLockEnabled) { LocksNum--; }
 #endif
-#if WITH_LONG_LOCKING_TRAPS == 1
+#if WITH_ADDITIONAL_LOCKING_VARS == 1
 		if (LocksNum == 0) {
+#if WITH_LONG_LOCKING_TRAPS == 1
 			int64 LockedFor = FDateTime::UtcNow().GetTicks() - LockedAt;
+			UE_CPP_BRIDGE_DEV_TRAP(LockedFor < TrapLongLocksAt || LockedFor >= TrapIgnoresLocksAfter);
+#endif
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 			UnlockedBy = LockedBy;
 			LockedBy = ZeroThread;
-
-			UE_CPP_BRIDGE_DEV_TRAP(LockedFor < TrapLongLocksAt || LockedFor >= TrapIgnoresLocksAfter);
+#endif
 		}
 #endif
 		WriteLock.Unlock();
@@ -131,10 +136,10 @@ public:
 #endif
 	}
 #if WITH_ADDITIONAL_LOCKING_VARS
-	bool IsLocked(bool OkVal) {
+	bool IsLocked(bool OkVal = true) {
 		return LockedBy == std::this_thread::get_id();
 	}
-	bool IsLockedRead(bool OkVal) {
+	bool IsLockedRead(bool OkVal = true) {
 		// not 100% guarantee ReadersNum means THIS thread had a read-lock, but should do for now
 		return LockedBy == std::this_thread::get_id() || ReadersNum.GetValue() > 0;
 	}
