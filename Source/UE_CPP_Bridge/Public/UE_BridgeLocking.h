@@ -196,8 +196,9 @@ public:
 		Section->BeginRead();
 	}
 	~FReadableScopeLockRead() {
-		Section->EndRead();
+		if (Section != NULL) { Section->EndRead(); }
 	}
+	void Release() { Section->EndRead(); Section = NULL; }
 };
 class UE_CPP_BRIDGE_API FReadableScopeLockWrite{
 public:
@@ -207,8 +208,9 @@ public:
 		Section->BeginWrite();
 	}
 	~FReadableScopeLockWrite() {
-		Section->EndWrite();
+		if (Section != NULL) { Section->EndWrite(); }
 	}
+	void Release() { Section->EndWrite(); Section = NULL; }
 };
 std::list<std::thread::id> UE_CPP_BRIDGE_API WhoIsLocking(const FThreadsafeReadable* Caller);
 };
