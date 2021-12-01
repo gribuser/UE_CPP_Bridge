@@ -54,6 +54,10 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 
 		return;
 	}
+	if (ExistingLockN != INDEX_NONE && !Write) {
+		// We have this log already anyway, so no chance to deadlock more than we did already
+		return;
+	}
 
 	for (size_t i = 0; i < ThreadRec->Num(); i++) {
 		const FThreadsafeReadable* PrevLocker = (*ThreadRec)[i];
