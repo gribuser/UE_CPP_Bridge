@@ -54,10 +54,10 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 
 		return;
 	}
-	if (ExistingLockN != INDEX_NONE && !Write) {
-		// We have this log already anyway, so no chance to deadlock more than we did already
-		return;
-	}
+	//if (ExistingLockN != INDEX_NONE && !Write) {
+	//	// We have this log already anyway, so no chance to deadlock more than we did already
+	//	return;
+	//}
 
 	for (size_t i = 0; i < ThreadRec->Num(); i++) {
 		const FThreadsafeReadable* PrevLocker = (*ThreadRec)[i];
@@ -72,7 +72,7 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 			if (ANotherLockedMyCurrentN == INDEX_NONE) continue;
 			if (!Write && !RWLog[AnotherLocker.first][ANotherLockedMyCurrentN]) continue;
 			// Cross-thread deadlock: thread A locks [1] then [2], thread B locks [2] then [1]
-			UE_CPP_BRIDGE_DEV_TRAP(ANotherLockedMyCurrentN > ANotherLockedMyPrevN);
+			UE_CPP_BRIDGE_DEV_TRAP(ANotherLockedMyCurrentN >= ANotherLockedMyPrevN);
 			//UE_CPP_BRIDGE_DEV_TRAP(!(
 			//	AnotherLocker.second.Contains(Caller)
 			//	&& AnotherLocker.second.Contains(PrevLocker)
