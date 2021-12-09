@@ -58,6 +58,12 @@ public:
 		EndWrite();
 		return Out;
 	}
+	int32 ThreadSafeRemove(const InKeyType& Item) {
+		BeginWrite();
+		int32 Out = Remove(Item);
+		EndWrite();
+		return Out;
+	}
 };
 
 template<typename InElementType>
