@@ -72,7 +72,7 @@ public:
 			LockedAt = FDateTime::UtcNow().GetTicks();
 			int64 LockingTook = LockedAt - TryLockAt;
 			UE_CPP_BRIDGE_DEV_TRAP(LockingTook < TrapLongLocksAt || LockingTook >= TrapIgnoresLocksAfter);
-			UE_CPP_BRIDGE_DEV_TRAP(!bMultyLockEnabled || LockingTook < TrapShortLocksAt || LockingTook > TrapIgnoresLocksAfter);
+			UE_CPP_BRIDGE_DEV_TRAP(bMultyLockEnabled || LockingTook < TrapShortLocksAt || LockingTook > TrapIgnoresLocksAfter);
 		}
 #endif
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
