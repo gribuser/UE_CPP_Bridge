@@ -14,7 +14,3 @@
 #include "Templates/SharedPointer.h"
 #include "HAL/RunnableThread.h"
 #include "Misc/ByteSwap.h"
-
-namespace PrimitiveGames{ namespace Utils {
-
-}}
