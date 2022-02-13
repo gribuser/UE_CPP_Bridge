@@ -9,6 +9,52 @@ namespace UE_CPP_Bridge {
 const std::thread::id FThreadsafeReadable::ZeroThread;
 #endif
 
+void FThreadsafeReadable::BeginRead() const {
+	{
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>  BeginRead"),DebugLogN));
+		LockIn(this, false);
+#endif
+		AcquireLock();
+		ReadersNum.Increment();
+		LastReader = std::this_thread::get_id();
+		ReleaseLock();
+	}
+}
+
+void FThreadsafeReadable::EndRead() const {
+	ReadersNum.Decrement();
+	#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+	LockOut(this);
+	#endif
+}
+
+void FThreadsafeReadable::BeginWrite() const {
+	#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+	LockIn(this, true);
+	#endif
+	AcquireLock();
+
+	#if WITH_LONG_LOCKING_TRAPS == 1
+	int64 WaitStartedAt = FDateTime::UtcNow().GetTicks();
+	#endif
+	while (ReadersNum.GetValue() > 0) {
+		FPlatformProcess::Sleep(0.00001);
+		#if WITH_LONG_LOCKING_TRAPS == 1
+		int64 Now = FDateTime::UtcNow().GetTicks();
+		UE_CPP_BRIDGE_DEV_TRAP(Now - WaitStartedAt < TrapLongLocksAt || Now - WaitStartedAt >= TrapIgnoresLocksAfter);
+		#endif
+	}
+}
+void FThreadsafeReadable::EndWrite() const {
+	#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+	LockOut(this);
+	check(LockedBy == std::this_thread::get_id());
+	#endif
+	ReleaseLock();
+}
+
+
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 
 std::string StreamString() {

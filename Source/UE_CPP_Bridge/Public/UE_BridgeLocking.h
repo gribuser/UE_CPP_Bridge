@@ -1,36 +1,37 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
 #include <string>
-#include <thread>
 #include <list>
+#include <thread>
 #if UE_CPP_BRIDGE_MUTEX_CLASSES_MODE == 1
 #include <mutex>
 #include <atomic>
 #elif UE_CPP_BRIDGE_MUTEX_CLASSES_MODE == 2
 #include "CoreMinimal.h"
 #include "HAL/CriticalSection.h"
+#include "HAL/ThreadSafeCounter.h"
 #else
 static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details");
 #endif
 
-namespace UE_CPP_Bridge {
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1 || WITH_LONG_LOCKING_TRAPS == 1
 	#define WITH_ADDITIONAL_LOCKING_VARS 1
 #else
 	#define WITH_ADDITIONAL_LOCKING_VARS 0
 #endif
 
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-class FThreadsafeReadable;
-void LockIn(const FThreadsafeReadable* Caller, bool Write);
-void LockOut(const FThreadsafeReadable* Caller);
+#ifndef UE_CPP_BRIDGE_API
+#define UE_CPP_BRIDGE_API DLLIMPORT
 #endif
+
+namespace UE_CPP_Bridge {
+
 
 #if WITH_LONG_LOCKING_TRAPS == 1
 //const int64 TrapLongLocksAt = 10000000 * 0.3;			// 0.5sec lock wait is kind of abnormal (to say the least)
-const int64 TrapLongLocksAt = 10000000 * 2;			// 0.5sec lock wait is kind of abnormal (to say the least)
+const int64 TrapLongLocksAt = 10000000 * 2;					// 0.5sec lock wait is kind of abnormal (to say the least)
 const int64 TrapShortLocksAt = 10000000 * 0.05;			// 0.5sec lock wait is kind of abnormal (to say the least)
-const int64 TrapIgnoresLocksAfter = 10000000 * 2; // must be dubugger? We ignore this
+const int64 TrapIgnoresLocksAfter = 10000000 * 2;		// must be dubugger? We ignore this
 #endif
 
 class UE_CPP_BRIDGE_API FThreadsafeReadable {
@@ -39,7 +40,7 @@ private:
 	mutable FCriticalSection WriteLock;
 public:
 	FThreadsafeReadable() {}
-#if WITH_ADDITIONAL_LOCKING_VARS
+#if WITH_ADDITIONAL_LOCKING_VARS == 1
 	mutable bool bMultyLockEnabled = false;
 	int DebugLogN = 0;
 	mutable int LocksNum = 0;
@@ -50,9 +51,6 @@ public:
 	FThreadsafeReadable(int ADebugLogN):DebugLogN(ADebugLogN) {}
 #endif
 
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-	int RNum() { return ReadersNum.GetValue(); }
-#endif
 
 #if WITH_LONG_LOCKING_TRAPS == 1
 	mutable int64 LockedAt;
@@ -121,23 +119,10 @@ public:
 #endif
 			;
 	}
-	void BeginRead() const {
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>  BeginRead"),DebugLogN));
-		LockIn(this, false);
-#endif
-		AcquireLock();
-		ReadersNum.Increment();
-		LastReader = std::this_thread::get_id();
-		ReleaseLock();
-	}
-	void EndRead() const {
-		ReadersNum.Decrement();
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		LockOut(this);
-#endif
-	}
-#if WITH_ADDITIONAL_LOCKING_VARS
+	void BeginRead() const;
+	void EndRead() const;
+
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS
 	bool IsLocked(bool OkVal = true) {
 		return LockedBy == std::this_thread::get_id();
 	}
@@ -150,31 +135,10 @@ public:
 	bool IsLockedRead(bool OkVal = true) {return OkVal;}
 #endif
 
-	void BeginWrite() const {
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		LockIn(this, true);
-#endif
-		AcquireLock();
+	void BeginWrite() const;
 
-#if WITH_LONG_LOCKING_TRAPS == 1
-		int64 WaitStartedAt = FDateTime::UtcNow().GetTicks();
-#endif
-		while (ReadersNum.GetValue() > 0) {
-			FPlatformProcess::Sleep(0.00001);
-#if WITH_LONG_LOCKING_TRAPS == 1
-			int64 Now = FDateTime::UtcNow().GetTicks();
-			UE_CPP_BRIDGE_DEV_TRAP(Now - WaitStartedAt < TrapLongLocksAt || Now - WaitStartedAt >= TrapIgnoresLocksAfter);
-#endif
-		}
-	}
+	void EndWrite() const;
 
-	void EndWrite() const {
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		LockOut(this);
-		check(LockedBy == std::this_thread::get_id());
-#endif
-		ReleaseLock();
-	}
 	//	bool TryBeginWrite() {
 	//#if !UE_BUILD_SHIPPING
 	//		if (DebugLogN) WriteP2PCosmosDebugLog(FString::Printf(TEXT("%i>  TryBeginWrite"),DebugLogN));
@@ -189,6 +153,11 @@ public:
 	//		return TryResult;
 	//	}
 };
+
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+void LockIn(const FThreadsafeReadable* Caller, bool Write);
+void LockOut(const FThreadsafeReadable* Caller);
+#endif
 
 class UE_CPP_BRIDGE_API FReadableScopeLockRead {
 public:
