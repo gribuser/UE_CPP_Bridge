@@ -28,9 +28,9 @@ namespace UE_CPP_Bridge {
 
 
 #if WITH_LONG_LOCKING_TRAPS == 1
-//const int64 TrapLongLocksAt = 10000000 * 0.3;			// 0.5sec lock wait is kind of abnormal (to say the least)
-const int64 TrapLongLocksAt = 10000000 * 2;					// 0.5sec lock wait is kind of abnormal (to say the least)
-const int64 TrapShortLocksAt = 10000000 * 0.05;			// 0.5sec lock wait is kind of abnormal (to say the least)
+//const int64 TrapLongLocksAt = 10000000 * 0.3;
+const int64 TrapLongLocksAt = 10000000 * 2;
+const int64 TrapShortLocksAt = 10000000 * 0.05;
 const int64 TrapIgnoresLocksAfter = 10000000 * 2;		// must be dubugger? We ignore this
 #endif
 
