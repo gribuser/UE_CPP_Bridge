@@ -1,4 +1,9 @@
 #pragma once
+
+#ifndef UE_CPP_BRIDGE_API
+#define UE_CPP_BRIDGE_API DLLIMPORT
+#endif
+
 /// Defines the used implementation library
 /// 1 - std::* implementation (sts::array, std::mutex, etc)
 /// 2 - UE implementation (TArray, FCriticalSection, etc)
@@ -30,7 +35,7 @@
 		#define WITH_LONG_LOCKING_TRAPS 0
 #else
 		#define WITH_THREAD_INTERLOCKING_DIAGNOSTICS 1
-		#define WITH_LONG_LOCKING_TRAPS 1
+		#define WITH_LONG_LOCKING_TRAPS 0
 	#endif
 #endif
 

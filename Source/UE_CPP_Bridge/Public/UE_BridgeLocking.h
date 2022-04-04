@@ -20,12 +20,7 @@ static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES
 	#define WITH_ADDITIONAL_LOCKING_VARS 0
 #endif
 
-#ifndef UE_CPP_BRIDGE_API
-#define UE_CPP_BRIDGE_API DLLIMPORT
-#endif
-
 namespace UE_CPP_Bridge {
-
 
 #if WITH_LONG_LOCKING_TRAPS == 1
 //const int64 TrapLongLocksAt = 10000000 * 0.3;
