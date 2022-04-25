@@ -14,28 +14,28 @@ public:
 	using TArray<InElementType>::TArray;
 	bool ThreadSafeContains(const InElementType& Item) const {
 		BeginRead();
-		bool Out = Contains(Item);
+		bool Out = this->Contains(Item);
 		EndRead();
 		return Out;
 	}
 	size_t ThreadSafeAdd(const InElementType& Item) {
 		BeginWrite();
-		size_t Out = Add(Item);
+		size_t Out = this->Add(Item);
 		EndWrite();
 		return Out;
 	}
 	size_t SubstituteOrAdd(const InElementType& Item, const InElementType& Replaceable = NULL) {
 		UE_CPP_BRIDGE_DEV_TRAP(IsLocked());
-		for (size_t i = 0; i < Num(); i++) {
+		for (size_t i = 0; i < this->Num(); i++) {
 			if ((*this)[i] == Replaceable) {
 				(*this)[i] = Item;
 				return i;
 			}
 		}
-		return Add(Item);
+		return this->Add(Item);
 	}
 	bool bIsReallyEmpty( const InElementType& Empty = NULL){
-		for (size_t i = 0; i < Num(); i++) {
+		for (size_t i = 0; i < this->Num(); i++) {
 			if ((*this)[i] != Empty) { return false; }
 		}
 		return true;
@@ -48,19 +48,19 @@ public:
 	using TMap<InKeyType, InElementType>::TMap;
 	bool ThreadSafeContains(const InKeyType& Item) const {
 		BeginRead();
-		bool Out = Contains(Item);
+		bool Out = this->Contains(Item);
 		EndRead();
 		return Out;
 	}
 	InElementType& ThreadSafeAdd(const InKeyType& Key, const InElementType& Value) {
 		BeginWrite();
-		InElementType& Out = Add(Key, Value);
+		InElementType& Out = this->Add(Key, Value);
 		EndWrite();
 		return Out;
 	}
 	int32 ThreadSafeRemove(const InKeyType& Item) {
 		BeginWrite();
-		int32 Out = Remove(Item);
+		int32 Out = this->Remove(Item);
 		EndWrite();
 		return Out;
 	}
