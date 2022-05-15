@@ -40,6 +40,13 @@ public:
 		}
 		return true;
 	}
+	operator TArray<InElementType>() const { return static_cast<TArray<InElementType>>(*this); }
+	TThreadedArray<InElementType>& operator =(const TArray<InElementType>& A) {
+		Reset();
+		Append(A);
+//		static_cast<TArray<InElementType>>(*this) = A;
+		return *this;
+	}
 };
 
 template<typename InKeyType, typename InElementType>
@@ -62,6 +69,20 @@ public:
 		BeginWrite();
 		int32 Out = this->Remove(Item);
 		EndWrite();
+		return Out;
+	}
+	InElementType ThreadSafePointerFind(const InKeyType& Item) {
+		BeginRead();
+		InElementType* OutRaw = this->Find(Item);
+		InElementType Out = OutRaw == NULL ? NULL : *OutRaw;
+		EndRead();
+		return Out;
+	}
+	const InElementType ThreadSafePointerFind(const InKeyType& Item) const {
+		BeginRead();
+		const InElementType* OutRaw = this->Find(Item);
+		const InElementType Out = OutRaw == NULL ? NULL : *OutRaw;
+		EndRead();
 		return Out;
 	}
 };
