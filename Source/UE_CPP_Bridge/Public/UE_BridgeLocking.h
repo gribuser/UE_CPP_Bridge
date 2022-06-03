@@ -3,16 +3,15 @@
 #include <string>
 #include <list>
 #include <thread>
-#if UE_CPP_BRIDGE_MUTEX_CLASSES_MODE == 1
 #include <mutex>
 #include <atomic>
-#elif UE_CPP_BRIDGE_MUTEX_CLASSES_MODE == 2
-#include "CoreMinimal.h"
-#include "HAL/CriticalSection.h"
-#include "HAL/ThreadSafeCounter.h"
-#else
-static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details");
-#endif
+//#elif UE_CPP_BRIDGE_MUTEX_CLASSES_MODE == 2
+//#include "CoreMinimal.h"
+//#include "HAL/CriticalSection.h"
+//#include "HAL/ThreadSafeCounter.h"
+//#else
+//static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details");
+//#endif
 
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1 || WITH_LONG_LOCKING_TRAPS == 1
 	#define WITH_ADDITIONAL_LOCKING_VARS 1
@@ -31,8 +30,8 @@ const int64 TrapIgnoresLocksAfter = 10000000 * 2;		// must be dubugger? We ignor
 
 class UE_CPP_BRIDGE_API FThreadsafeReadable {
 private:
-	mutable FThreadSafeCounter ReadersNum;
-	mutable FCriticalSection WriteLock;
+	mutable std::atomic_uint32_t ReadersNum;
+	mutable std::recursive_mutex WriteLock;
 public:
 	FThreadsafeReadable() {}
 #if WITH_ADDITIONAL_LOCKING_VARS == 1
@@ -59,7 +58,8 @@ public:
 #if WITH_LONG_LOCKING_TRAPS == 1
 		int64 TryLockAt = FDateTime::UtcNow().GetTicks();
 #endif
-		WriteLock.Lock();
+		WriteLock.lock();
+		//WriteLock.lock();
 #if WITH_LONG_LOCKING_TRAPS == 1
 		if (LocksNum == 0) {
 			LockedAt = FDateTime::UtcNow().GetTicks();
@@ -92,7 +92,7 @@ public:
 #endif
 		}
 #endif
-		WriteLock.Unlock();
+		WriteLock.unlock();
 	}
 	// review me: do we need this WaitForFreeState at all, what's this???
 	void WaitForFreeState() {
@@ -108,7 +108,7 @@ public:
 		}
 	}
 	bool FreeState() {
-		return ReadersNum.GetValue() == 0
+		return ReadersNum == 0
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 			&& LockedBy == ZeroThread
 #endif
@@ -123,7 +123,7 @@ public:
 	}
 	bool IsLockedRead(bool OkVal = true) {
 		// not 100% guarantee ReadersNum means THIS thread had a read-lock, but should do for now
-		return LockedBy == std::this_thread::get_id() || ReadersNum.GetValue() > 0;
+		return LockedBy == std::this_thread::get_id() || ReadersNum > 0;
 	}
 #else
 	bool IsLocked(bool OkVal = true) {return OkVal;}
