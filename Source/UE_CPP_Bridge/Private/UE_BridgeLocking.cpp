@@ -17,7 +17,9 @@ void FThreadsafeReadable::BeginRead() const {
 #endif
 		AcquireLock();
 		ReadersNum++;
+		#if WITH_ADDITIONAL_LOCKING_VARS == 1
 		LastReader = std::this_thread::get_id();
+		#endif
 		ReleaseLock();
 	}
 }
