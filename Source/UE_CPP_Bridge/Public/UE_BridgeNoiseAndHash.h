@@ -15,7 +15,7 @@ uint32 BBSHash(FIntVector2 v) {
 
 // 0..1
 float BBSHashF(FIntVector2 v) {
-	return (float)BBSHash(v) / 0x7FFF;
+	return (float)BBSHash(v) / 0xFFFF;
 }
 
 // Returns a random normalized vector based on input

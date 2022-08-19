@@ -58,7 +58,7 @@ uint32 BBSHash(uint32 v) {
 	v = v % 65521u;
 	v = (v * v) % 65521u;
 	v = (v * v) % 65521u;
-	return v << 16;
+	return v;
 }
 
 template <typename T>
