@@ -79,17 +79,15 @@ public:
 	void ReleaseLock() const {
 #if WITH_ADDITIONAL_LOCKING_VARS == 1
 		if (bMultyLockEnabled) { LocksNum--; }
-#endif
-#if WITH_ADDITIONAL_LOCKING_VARS == 1
 		if (LocksNum == 0) {
-#if WITH_LONG_LOCKING_TRAPS == 1
+	#if WITH_LONG_LOCKING_TRAPS == 1
 			int64 LockedFor = FDateTime::UtcNow().GetTicks() - LockedAt;
 			UE_CPP_BRIDGE_DEV_TRAP(LockedFor < TrapLongLocksAt || LockedFor >= TrapIgnoresLocksAfter);
-#endif
-#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+	#endif
+	#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 			UnlockedBy = LockedBy;
 			LockedBy = ZeroThread;
-#endif
+	#endif
 		}
 #endif
 		WriteLock.unlock();
