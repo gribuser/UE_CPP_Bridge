@@ -166,8 +166,8 @@ public:
 };
 class UE_CPP_BRIDGE_API FReadableScopeLockWrite{
 public:
-	FThreadsafeReadable* Section;
-	FReadableScopeLockWrite(FThreadsafeReadable* ASection) :Section(ASection) {
+	const FThreadsafeReadable* Section;
+	FReadableScopeLockWrite(const FThreadsafeReadable* ASection) :Section(ASection) {
 		check(Section);
 		Section->BeginWrite();
 	}
