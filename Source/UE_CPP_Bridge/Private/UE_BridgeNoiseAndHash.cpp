@@ -11,8 +11,8 @@ FVector2D simplex_hash(FVector2D p) {
 		p.Dot({269.5, 183.3})
 	};
 	T IP;
-	p.X = modf(sin(p.X) * 43758.5453123, &IP);
-	p.Y = modf(sin(p.Y) * 43758.5453123, &IP);
+	p.X = modf(cos(p.X) * 43758.5453123, &IP);
+	p.Y = modf(cos(p.Y) * 43758.5453123, &IP);
 	return p * 2 - 1.0;
 }
 
@@ -59,21 +59,6 @@ uint32 BBSHash(uint32 v) {
 	v = (v * v) % 65521u;
 	v = (v * v) % 65521u;
 	return v;
-}
-
-template <typename T>
-T PerlinNoise5ph(FVector2D Coord, T Phase) {
-	T v = 0.0f;
-	T scale = 0.3f;
-	T weight = 1.0f;
-	T weightTotal = 0.0f;
-	for (int i = 0; i < 5; i++) {
-		v += FMath::PerlinNoise2D(Coord * scale) * weight;
-		weightTotal += weight;
-		scale *= 0.5f;
-		weight *= 2.0f;
-	}
-	return v / weightTotal;
 }
 
 };

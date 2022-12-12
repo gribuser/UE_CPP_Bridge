@@ -35,16 +35,10 @@ FVector2D BBSHash2D(uint32 v) {
 	};
 }
 
-template <typename T>
-T PerlinNoise5ph(FVector2D Coord, T Phase);
-
 template UE_CPP_BRIDGE_API float SimplexNoise4Ph(FVector2D p, float Phase);
 template UE_CPP_BRIDGE_API float SimplexNoise4Ph<float, uint32>(FVector2D p, uint32 Phase);
 template UE_CPP_BRIDGE_API double SimplexNoise4Ph<double, uint32>(FVector2D p, uint32 Phase);
 template UE_CPP_BRIDGE_API double SimplexNoise4Ph<double, double>(FVector2D p, double Phase);
 template UE_CPP_BRIDGE_API float simplex_noise<float>(FVector2D P);
 template UE_CPP_BRIDGE_API double simplex_noise<double>(FVector2D P);
-template UE_CPP_BRIDGE_API float PerlinNoise5ph<float>(FVector2D Coord, float Phase);
-template UE_CPP_BRIDGE_API double PerlinNoise5ph<double>(FVector2D Coord, double Phase);
-
 };
