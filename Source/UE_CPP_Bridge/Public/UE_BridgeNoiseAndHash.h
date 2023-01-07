@@ -10,7 +10,7 @@ UE_CPP_BRIDGE_API TOut SimplexNoise4Ph(FVector2D p, Tin Phase);
 UE_CPP_BRIDGE_API uint32 BBSHash(uint32 v);
 
 uint32 BBSHash(FIntVector2 v) {
-	return BBSHash(BBSHash((uint32)v.X) + (uint32)v.Y);
+	return BBSHash((uint32)v.X ^ (uint32)v.Y);
 }
 
 // 0..1
@@ -19,19 +19,19 @@ float BBSHashF(FIntVector2 v) {
 }
 
 // Returns a random normalized vector based on input
-FVector2D BBSHash2D(FIntVector2 v) {
+FIntVector2 BBSHash2D(FIntVector2 v) {
 	int32 h32 = BBSHash(v);
 	return {
-		(float)(h32 & 0xFF) / 0xFF,
-		(float)(h32 >> 8) / 0xFF
+		h32 & 0xFF,
+		h32 >> 8 
 	};
 }
 
-FVector2D BBSHash2D(uint32 v) {
+FIntVector2 BBSHash2D(uint32 v) {
 	int32 h32 = BBSHash(v);
 	return {
-		(float)(h32 & 0xFF) / 0xFF,
-		(float)(h32 >> 8) / 0xFF
+		h32 & 0xFF,
+		h32 >> 8
 	};
 }
 
