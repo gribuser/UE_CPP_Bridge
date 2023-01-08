@@ -61,4 +61,17 @@ uint32 BBSHash(uint32 v) {
 	return v;
 }
 
+uint32 FastHash(uint32 x) {
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	return (x >> 16) ^ x;
+}
+
+uint32 FastHash16(uint32 x) {
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	return ((x >> 16) ^ x) & 0xFFFF;
+}
+
+
 };

@@ -8,6 +8,8 @@ template <typename TOut, typename Tin>
 UE_CPP_BRIDGE_API TOut SimplexNoise4Ph(FVector2D p, Tin Phase);
 
 UE_CPP_BRIDGE_API uint32 BBSHash(uint32 v);
+UE_CPP_BRIDGE_API uint32 FastHash(uint32 v);
+UE_CPP_BRIDGE_API uint32 FastHash16(uint32 v);
 
 uint32 BBSHash(FIntVector2 v) {
 	return BBSHash((uint32)v.X ^ (uint32)v.Y);
