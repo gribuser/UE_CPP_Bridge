@@ -14,3 +14,7 @@
 #include "Templates/SharedPointer.h"
 #include "HAL/RunnableThread.h"
 #include "Misc/ByteSwap.h"
+#include "Containers/Queue.h"
+#include "Containers/UnrealString.h"
+#include "GenericPlatform/GenericPlatformProcess.h"
+
