@@ -17,7 +17,7 @@ UE_CPP_BRIDGE_API uint32 BBSHash(FIntVector2 v);
 UE_CPP_BRIDGE_API float BBSHashF(FIntVector2 v);
 
 // Returns a random normalized vector based on input
-FIntVector2 BBSHash2D(FIntVector2 v) {
+inline FIntVector2 BBSHash2D(FIntVector2 v) {
 	int32 h32 = BBSHash(v);
 	return {
 		h32 & 0xFF,
@@ -25,7 +25,7 @@ FIntVector2 BBSHash2D(FIntVector2 v) {
 	};
 }
 
-FIntVector2 BBSHash2D(uint32 v) {
+inline FIntVector2 BBSHash2D(uint32 v) {
 	int32 h32 = BBSHash(v);
 	return {
 		h32 & 0xFF,
@@ -62,16 +62,16 @@ UE_CPP_BRIDGE_API int32_t Cos_Int(int32_t x);
 //void DEBUG_MixtureHash(FVector2D p, FInt64Vector2 A);
 
 
-FIntVector2 operator +(FIntVector2& A, int B) {
+inline FIntVector2 operator +(FIntVector2& A, int B) {
 	return { A.X + B, A.Y + B };
 }
-FIntVector2 operator *(FIntVector2& A, int B) {
+inline FIntVector2 operator *(FIntVector2& A, int B) {
 	return { A.X * B, A.Y * B };
 }
-FIntVector2 operator /(FIntVector2& A, int B) {
+inline FIntVector2 operator /(FIntVector2& A, int B) {
 	return { A.X / B, A.Y / B };
 }
-FIntVector2 operator & (FIntVector2& A, int B) {
+inline FIntVector2 operator & (FIntVector2& A, int B) {
 	return { A.X & B, A.Y & B };
 }
 
