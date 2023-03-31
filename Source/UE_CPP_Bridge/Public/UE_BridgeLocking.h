@@ -30,7 +30,7 @@ const int64 TrapIgnoresLocksAfter = 10000000 * 2;		// must be dubugger? We ignor
 
 class UE_CPP_BRIDGE_API FThreadsafeReadable {
 private:
-	mutable std::atomic_uint32_t ReadersNum;
+	mutable std::atomic<std::uint32_t> ReadersNum;
 	mutable std::recursive_mutex WriteLock;
 public:
 	FThreadsafeReadable() {}

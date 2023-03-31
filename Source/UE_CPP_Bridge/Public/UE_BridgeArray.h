@@ -6,7 +6,7 @@
 #include <random>
 #include <algorithm>
 #elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 2
-#include "CoreMinimal.h"
+#include "Containers/Array.h"
 #else
 static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
 #endif
