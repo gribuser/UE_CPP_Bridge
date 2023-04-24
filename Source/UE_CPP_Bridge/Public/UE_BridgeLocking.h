@@ -35,7 +35,7 @@ private:
 public:
 	FThreadsafeReadable() {}
 #if WITH_ADDITIONAL_LOCKING_VARS == 1
-	mutable bool bMultyLockEnabled = false;
+	mutable bool bMultiLockEnabled = false;
 	int DebugLogN = 0;
 	mutable int LocksNum = 0;
 	static const std::thread::id ZeroThread;
@@ -65,20 +65,20 @@ public:
 			LockedAt = FDateTime::UtcNow().GetTicks();
 			int64 LockingTook = LockedAt - TryLockAt;
 			UE_CPP_BRIDGE_DEV_TRAP(LockingTook < TrapLongLocksAt || LockingTook >= TrapIgnoresLocksAfter);
-			UE_CPP_BRIDGE_DEV_TRAP(bMultyLockEnabled || LockingTook < TrapShortLocksAt || LockingTook > TrapIgnoresLocksAfter);
+			UE_CPP_BRIDGE_DEV_TRAP(bMultiLockEnabled || LockingTook < TrapShortLocksAt || LockingTook > TrapIgnoresLocksAfter);
 		}
 #endif
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-		check(LockedBy == ZeroThread || bMultyLockEnabled);
+		check(LockedBy == ZeroThread || bMultiLockEnabled);
 		LockedBy = std::this_thread::get_id();
 #endif
 #if WITH_ADDITIONAL_LOCKING_VARS == 1
-		if (bMultyLockEnabled) { LocksNum++; }
+		if (bMultiLockEnabled) { LocksNum++; }
 #endif
 	}
 	void ReleaseLock() const {
 #if WITH_ADDITIONAL_LOCKING_VARS == 1
-		if (bMultyLockEnabled) { LocksNum--; }
+		if (bMultiLockEnabled) { LocksNum--; }
 		if (LocksNum == 0) {
 	#if WITH_LONG_LOCKING_TRAPS == 1
 			int64 LockedFor = FDateTime::UtcNow().GetTicks() - LockedAt;

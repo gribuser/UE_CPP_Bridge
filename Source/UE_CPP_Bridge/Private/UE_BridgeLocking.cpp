@@ -87,7 +87,7 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 	}
 	int ExistingLockN = ThreadRec->Find(Caller);
 	// This thread had locked this mutex already
-	UE_CPP_BRIDGE_DEV_TRAP(Caller->bMultyLockEnabled || ExistingLockN == INDEX_NONE || !(*RWRec)[ExistingLockN] && !Write);
+	UE_CPP_BRIDGE_DEV_TRAP(Caller->bMultiLockEnabled || ExistingLockN == INDEX_NONE || !(*RWRec)[ExistingLockN] && !Write);
 
 	// If this is a uniq lock it's ok. And if it's all about read-locking, you can stack it
 	// as much as you like. Otherwise we need some checks here and we are not going to
@@ -97,8 +97,8 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 		// You can't upgrade read-only lock to read-write lock!
 		UE_CPP_BRIDGE_DEV_TRAP((*RWRec)[ExistingLockN]);
 
-		// You can only re-lock if bMultyLockEnabled was set, so generally it's suspicious
-		UE_CPP_BRIDGE_DEV_TRAP(Caller->bMultyLockEnabled);
+		// You can only re-lock if bMultiLockEnabled was set, so generally it's suspicious
+		UE_CPP_BRIDGE_DEV_TRAP(Caller->bMultiLockEnabled);
 
 		return;
 	}
