@@ -51,7 +51,7 @@ public:
 #endif
 
 	~FThreadsafeReadable() {
-		//UE_CPP_BRIDGE_DEV_TRAP(FreeState());
+		UE_CPP_BRIDGE_DEV_TRAP(FreeState());
 		WriteLock.lock();
 		WaitForFreeState();
 	}

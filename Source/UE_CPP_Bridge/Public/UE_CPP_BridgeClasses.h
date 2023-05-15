@@ -8,7 +8,7 @@
 #include "UE_BridgeThreadedContainers.h"
 #include "EU_CPP_BridgeMisc.h"
 
-// implemen me ASAP: this stuff is not moved here properly yet:
+// implement me ASAP: this stuff is not moved here properly yet:
 
 #include "Misc/DateTime.h"
 #include "Templates/SharedPointer.h"
