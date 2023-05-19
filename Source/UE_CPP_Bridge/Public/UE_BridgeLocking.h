@@ -1,6 +1,5 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
-#include <string>
 #include <list>
 #include <thread>
 #include <mutex>
