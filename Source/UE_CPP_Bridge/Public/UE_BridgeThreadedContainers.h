@@ -42,8 +42,8 @@ public:
 	}
 	operator TArray<InElementType>() const { return static_cast<TArray<InElementType>>(*this); }
 	TThreadedArray<InElementType>& operator =(const TArray<InElementType>& A) {
-		Reset();
-		Append(A);
+		TArray<InElementType>::Reset();
+		TArray<InElementType>::Append(A);
 //		static_cast<TArray<InElementType>>(*this) = A;
 		return *this;
 	}
