@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef P2P_BUILD_FOR_STANDALONE_SERVER
+#include "PrimitiveServerSettings.h"
+#endif
+
+
 #ifndef UE_CPP_BRIDGE_API
 #define UE_CPP_BRIDGE_API DLLIMPORT
 #endif
