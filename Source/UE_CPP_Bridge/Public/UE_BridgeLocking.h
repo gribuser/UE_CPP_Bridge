@@ -1,6 +1,7 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
 #include <list>
+#include <chrono>
 #include <thread>
 #include <mutex>
 #include <atomic>
@@ -17,6 +18,7 @@
 #else
 	#define WITH_ADDITIONAL_LOCKING_VARS 0
 #endif
+
 
 namespace UE_CPP_Bridge {
 

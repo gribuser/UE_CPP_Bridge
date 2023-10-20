@@ -4,7 +4,11 @@
 #include <codecvt>
 
 #ifdef _WIN32
-#include "Windows/MinWindows.h"
+	#if P2P_BUILD_FOR_STANDALONE_SERVER
+		#include <windows.h>
+	#else
+		#include "Windows/MinWindows.h"
+	#endif
 #elif defined(__linux__)
 #include <sys/prctl.h>
 #endif

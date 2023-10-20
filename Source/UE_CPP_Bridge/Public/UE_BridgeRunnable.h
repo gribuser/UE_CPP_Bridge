@@ -1,5 +1,6 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
+#include "UE_BridgeGenericPlatform.h"
 #include <thread>
 #include <string>
 
