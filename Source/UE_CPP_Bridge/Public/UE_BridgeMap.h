@@ -3,7 +3,7 @@
 
 #if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
 #include <map>
-static_assert(0, "Not implemented yet");
+//static_assert(0, "Not implemented yet");
 #elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 2
 #include "Containers/Map.h"
 #else

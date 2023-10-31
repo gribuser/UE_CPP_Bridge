@@ -1,9 +1,6 @@
 #pragma once
 
-#ifdef P2P_BUILD_FOR_STANDALONE_SERVER
-#include "PrimitiveServerSettings.h"
-#endif
-
+#include "UE_BridgeGenericPlatform.h"
 
 #ifndef UE_CPP_BRIDGE_API
 #define UE_CPP_BRIDGE_API DLLIMPORT
@@ -14,7 +11,7 @@
 /// 2 - UE implementation (TArray, FCriticalSection, etc)
 #ifndef UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE
 	// We are inside UE, so we (by default) use UE's classes
-	#if UE_BUILD_DEBUG + UE_BUILD_DEVELOPMENT + UE_BUILD_TEST + UE_BUILD_SHIPPING == 1
+	#if UE_BUILD_DEBUG + UE_BUILD_DEVELOPMENT + UE_BUILD_TEST + UE_BUILD_SHIPPING == 1 && !P2P_BUILD_FOR_STANDALONE_SERVER
 		#define UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE 2
 	#else
 		#define UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE 1
