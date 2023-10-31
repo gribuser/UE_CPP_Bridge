@@ -1,106 +1,53 @@
 #pragma once
-#include "UE_CPP_Bridge_Setup.h"
+//#include "UE_CPP_Bridge_Setup.h"
 
-#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
-	#include <cstdint>
-	#include <chrono>
-	#include <thread>
-#elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 2
-	#include "GenericPlatform/GenericPlatformProcess.h"
-#else
-	static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
+#ifndef P2P_BUILD_FOR_STANDALONE_SERVER
+#define P2P_BUILD_FOR_STANDALONE_SERVER 0
 #endif
 
-// We emulate base UE's u/int8,16,32,64 functionality with <cstdint>
-#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
-
-//~ Unsigned base types
-
-// 8-bit unsigned integer
-typedef unsigned char				uint8;
-//typedef uint8_t uint8;
-
-// 16-bit unsigned integer
-typedef unsigned short			uint16;
-
-// 32-bit unsigned integer
-typedef unsigned int				uint32;
-
-// 64-bit unsigned integer
-typedef unsigned long long	uint64;
-
-//~ Signed base types.
-
-// 8-bit signed integer
-typedef	signed char			int8;
-
-// 16-bit signed integer
-typedef short						int16;
-
-// 32-bit signed integer
-typedef int							int32;
-
-// 64-bit signed integer
-typedef long long				int64;
-
-//~ Character types
-
-// An ANSI character. 8-bit fixed-width representation of 7-bit characters.
-typedef char				ANSICHAR;
-
-// A wide character. In-memory only. ?-bit fixed-width representation of the platform's natural wide character set. Could be different sizes on different platforms.
-typedef wchar_t				WIDECHAR;
-
-// An 8-bit character type. In-memory only. 8-bit representation. Should really be char8_t but making this the generic option is easier for compilers which don't fully support C++20 yet.
-enum UTF8CHAR : unsigned char {};
-
-// An 8-bit character type. In-memory only. 8-bit representation.
-/* UE_DEPRECATED(5.0) */ [[deprecated("FPlatformTypes::CHAR8 is deprecated, please use FPlatformTypes::UTF8CHAR instead.")]]
-typedef uint8				CHAR8;
-
-// A 16-bit character type. In-memory only.  16-bit representation. Should really be char16_t but making this the generic option is easier for compilers which don't fully support C++11 yet (i.e. MSVC).
-typedef uint16				CHAR16;
-
-// A 32-bit character type. In-memory only. 32-bit representation. Should really be char32_t but making this the generic option is easier for compilers which don't fully support C++11 yet (i.e. MSVC).
-typedef uint32				CHAR32;
-
-// A switchable character. In-memory only. Either ANSICHAR or WIDECHAR, depending on a licensee's requirements.
-typedef WIDECHAR			TCHAR;
-
-
-/* Numeric constants
- *****************************************************************************/
-
-#define MIN_uint8		((uint8)	0x00)
-#define	MIN_uint16		((uint16)	0x0000)
-#define	MIN_uint32		((uint32)	0x00000000)
-#define MIN_uint64		((uint64)	0x0000000000000000)
-#define MIN_int8		((int8)		-128)
-#define MIN_int16		((int16)	-32768)
-#define MIN_int32		((int32)	0x80000000)
-#define MIN_int64		((int64)	0x8000000000000000)
-
-#define MAX_uint8		((uint8)	0xff)
-#define MAX_uint16		((uint16)	0xffff)
-#define MAX_uint32		((uint32)	0xffffffff)
-#define MAX_uint64		((uint64)	0xffffffffffffffff)
-#define MAX_int8		((int8)		0x7f)
-#define MAX_int16		((int16)	0x7fff)
-#define MAX_int32		((int32)	0x7fffffff)
-#define MAX_int64		((int64)	0x7fffffffffffffff)
-
-#define MIN_flt			(1.175494351e-38F)			/* min positive value */
-#define MAX_flt			(3.402823466e+38F)
-#define MIN_dbl			(2.2250738585072014e-308)	/* min positive value */
-#define MAX_dbl			(1.7976931348623158e+308)	
 
 #if P2P_BUILD_FOR_STANDALONE_SERVER
-struct FPlatformProcess {
-	void static Sleep(const double ASeconds) {
-		std::this_thread::sleep_for(std::chrono::duration<double>(ASeconds));
-	}
-};
+
+#ifdef _WIN32
+  #include "WindowsPlatform.h"
+#elif defined(__linux__)
+  #include <UnixPlatform.h>
 #endif
 
+ //#ifndef verify
+ //#define verify(expr)			UE_CHECK_IMPL(expr)
+ //#endif
+
+ //#ifndef check
+ //#define check(expr)				UE_CHECK_IMPL(expr)
+ //#endif
+ //
+ //	// Technically we could use just the _F version (lambda-based) for asserts
+ //	// both with and without formatted messages. However MSVC emits extra
+ //	// unnecessary instructions when using a lambda; hence the Exec() impl.
+ //	#define UE_CHECK_IMPL(expr) \
+ 	//		{ \
+ 	//			if(UNLIKELY(!(expr))) \
+ 	//			{ \
+ 	//				struct Impl \
+ 	//				{ \
+ 	//					static void FORCENOINLINE UE_DEBUG_SECTION ExecCheckImplInternal() \
+ 	//					{ \
+ 	//						FDebug::CheckVerifyFailedImpl(#expr, __FILE__, __LINE__, PLATFORM_RETURN_ADDRESS(), TEXT("")); \
+ 	//					} \
+ 	//				}; \
+ 	//				Impl::ExecCheckImplInternal(); \
+ 	//				PLATFORM_BREAK_IF_DESIRED(); \
+ 	//				CA_ASSUME(false); \
+ 	//			} \
+ 	//		}
+
+
+#ifndef check
+#define check(expr) \
+			if (!(expr)) { \
+				PLATFORM_BREAK(); \
+			}
+#endif
 
 #endif
