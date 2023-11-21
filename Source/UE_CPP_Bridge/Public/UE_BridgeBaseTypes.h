@@ -95,14 +95,18 @@ typedef uint32				CHAR32;
 #define MIN_dbl			(2.2250738585072014e-308)	/* min positive value */
 #define MAX_dbl			(1.7976931348623158e+308)	
 
+
+enum { INDEX_NONE = -1 };
+
+
+
 struct FPlatformProcess {
   void static Sleep(const double ASeconds) {
     std::this_thread::sleep_for(std::chrono::duration<double>(ASeconds));
   }
 };
 
-struct FVector2D
-{
+struct FVector2D {
 public:
 	//using FReal = T;
 
@@ -116,26 +120,73 @@ public:
 		: X(InX), Y(InY)
 	{ }
 
-	double Dot(const FVector2D& V2) const
-	{
+	double Dot(const FVector2D& V2) const {
 		return X * V2.X + Y * V2.Y;
 	}
-	FVector2D operator*(double Scale) const
-	{
+	FVector2D operator*(double Scale) const {
 		return FVector2D(X * Scale, Y * Scale);
 	}
-	FVector2D operator/(double Scale) const
-	{
+	FVector2D operator/(double Scale) const {
 		const double RScale = 1.f / Scale;
 		return FVector2D(X * RScale, Y * RScale);
 	}
-	FVector2D operator+(double A) const
-	{
+	FVector2D operator+(double A) const {
 		return FVector2D(X + A, Y + A);
 	}
-	FVector2D operator-(double A) const
-	{
+	FVector2D operator-(double A) const {
 		return FVector2D(X - A, Y - A);
+	}
+	FVector2D operator*(const FVector2D& V2) const {
+		return FVector2D(X * V2.X, Y * V2.Y);
+	}
+	FVector2D operator/(const FVector2D& V2) const {
+		return FVector2D(X / V2.X, Y / V2.Y);
+	}
+	FVector2D operator+(const FVector2D& V2) const {
+		return FVector2D(X + V2.X, Y + V2.Y);
+	}
+	FVector2D operator-(const FVector2D& V2) const {
+		return FVector2D(X - V2.X, Y - V2.Y);
+	}
+};
+
+struct FVector {
+public:
+	double X;
+	double Y;
+	double Z;
+
+	FVector(double InX, double InY, double InZ = 0.0)
+		: X(InX), Y(InY), Z(InZ)
+	{ }
+
+	double Dot(const FVector& V2) const {
+		return X * V2.X + Y * V2.Y + Z * V2.Z;
+	}
+	FVector operator*(double Scale) const {
+		return FVector(X * Scale, Y * Scale, Z * Scale);
+	}
+	FVector operator/(double Scale) const {
+		const double RScale = 1.f / Scale;
+		return FVector(X * RScale, Y * RScale, Z * RScale);
+	}
+	FVector operator+(double A) const {
+		return FVector(X + A, Y + A, Z + A);
+	}
+	FVector operator-(double A) const {
+		return FVector(X - A, Y - A, Z - A);
+	}
+	FVector operator*(const FVector& V) const {
+		return FVector(X * V.X, Y * V.Y, Z * V.Z);
+	}
+	FVector operator/(const FVector& V) const {
+		return FVector(X / V.X, Y / V.Y, Z / V.Z);
+	}
+	FVector operator+(const FVector& V) const {
+		return FVector(X + V.X, Y + V.Y, Z + V.Z);
+	}
+	FVector operator-(const FVector& V) const {
+		return FVector(X - V.X, Y - V.Y, Z - V.Z);
 	}
 };
 
