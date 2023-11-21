@@ -28,6 +28,9 @@ enum class ESPMode : uint8_t
 template< class ObjectType, ESPMode InMode >
 class TSharedPtr : private std::shared_ptr<ObjectType> {
 	using std::shared_ptr<ObjectType>::shared_ptr;
+	using std::shared_ptr<ObjectType>::use_count;
+	using std::shared_ptr<ObjectType>::reset;
+	using std::shared_ptr<ObjectType>::get;
 	//FORCEINLINE TSharedPtr(ObjectType* ObjectPtr) : std::shared_ptr<ObjectType>(ObjectPtr);
 
 	const bool IsValid() const { return !!this && use_count() > 0; }
