@@ -17,6 +17,17 @@ template<typename InElementType>
 class TArray: public std::vector<InElementType> {
 public:
 	using std::vector<InElementType>::vector;
+	using std::vector<InElementType>::size;
+	using std::vector<InElementType>::clear;
+	using std::vector<InElementType>::push_back;
+	using std::vector<InElementType>::reserve;
+	using std::vector<InElementType>::resize;
+	using std::vector<InElementType>::data;
+	using std::vector<InElementType>::erase;
+	using std::vector<InElementType>::begin;
+	using std::vector<InElementType>::end;
+	using std::vector<InElementType>::back;
+
 	size_t Num() const { return size(); }
 	void Reset() { clear(); }
 	size_t Add(InElementType&& Item) { push_back(Item); return size() - 1; }
