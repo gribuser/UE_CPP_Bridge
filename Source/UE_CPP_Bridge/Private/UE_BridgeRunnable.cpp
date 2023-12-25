@@ -4,7 +4,7 @@
 #include <codecvt>
 
 #ifdef _WIN32
-	#if P2P_BUILD_FOR_STANDALONE_SERVER
+	#ifdef P2P_BUILD_FOR_STANDALONE_SERVER
 		#include <windows.h>
 	#else
 		#include "Windows/MinWindows.h"
