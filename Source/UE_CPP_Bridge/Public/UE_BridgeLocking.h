@@ -116,16 +116,16 @@ public:
 	void EndRead() const;
 
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS
-	bool IsLocked(bool OkVal = true) {
+	bool IsLocked(bool OkVal = true) const {
 		return LockedBy == std::this_thread::get_id();
 	}
-	bool IsLockedRead(bool OkVal = true) {
+	bool IsLockedRead(bool OkVal = true) const {
 		// not 100% guarantee ReadersNum means THIS thread had a read-lock, but should do for now
 		return LockedBy == std::this_thread::get_id() || ReadersNum > 0;
 	}
 #else
-	bool IsLocked(bool OkVal = true) {return OkVal;}
-	bool IsLockedRead(bool OkVal = true) {return OkVal;}
+	bool IsLocked(bool OkVal = true) const {return OkVal;}
+	bool IsLockedRead(bool OkVal = true) const {return OkVal;}
 #endif
 
 	void BeginWrite() const;
