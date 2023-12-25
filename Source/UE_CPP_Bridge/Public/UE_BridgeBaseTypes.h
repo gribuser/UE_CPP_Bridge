@@ -55,8 +55,8 @@ typedef wchar_t				WIDECHAR;
 enum UTF8CHAR: unsigned char {};
 
 // An 8-bit character type. In-memory only. 8-bit representation.
-/* UE_DEPRECATED(5.0) */ [[deprecated("FPlatformTypes::CHAR8 is deprecated, please use FPlatformTypes::UTF8CHAR instead.")]]
-typedef uint8				CHAR8;
+///* UE_DEPRECATED(5.0) */ [[deprecated("FPlatformTypes::CHAR8 is deprecated, please use FPlatformTypes::UTF8CHAR instead.")]]
+//typedef uint8				CHAR8;
 
 // A 16-bit character type. In-memory only.  16-bit representation. Should really be char16_t but making this the generic option is easier for compilers which don't fully support C++11 yet (i.e. MSVC).
 typedef uint16				CHAR16;
@@ -105,6 +105,8 @@ struct FPlatformProcess {
     std::this_thread::sleep_for(std::chrono::duration<double>(ASeconds));
   }
 };
+
+
 
 struct FVector2D {
 public:
@@ -190,16 +192,105 @@ public:
 	}
 };
 
-struct FIntVector2
-{
+struct FIntVector2 {
 public:
 	//using FReal = T;
 
 	/** Vector's X component. */
-	int64 X;
+	int32 X;
 
 	/** Vector's Y component. */
-	int64 Y;
+	int32 Y;
 };
+
+struct FIntVector3 {
+public:
+	//using FReal = T;
+
+	/** Vector's X component. */
+	int32 X;
+
+	/** Vector's Y component. */
+	int32 Y;
+
+	/** Vector's Y component. */
+	int32 Z;
+};
+
+using FIntVector = FIntVector3;
+
+struct FRotator {
+public:
+
+	/** Rotation around the right axis (around Y axis), Looking up and down (0=Straight Ahead, +Up, -Down) */
+	double Pitch;
+
+	/** Rotation around the up axis (around Z axis), Turning around (0=Forward, +Right, -Left)*/
+	double Yaw;
+
+	/** Rotation around the forward axis (around X axis), Tilting your head, (0=Straight, +Clockwise, -CCW) */
+	double Roll;
+
+	FRotator() { }
+	FRotator(double InF)
+		: Pitch(InF), Yaw(InF), Roll(InF)
+	{}
+	FRotator(double InPitch, double InYaw, double InRoll)
+		: Pitch(InPitch), Yaw(InYaw), Roll(InRoll)
+	{}
+
+	FRotator operator+(const FRotator& R) const {
+		return FRotator(Pitch + R.Pitch, Yaw + R.Yaw, Roll + R.Roll);
+	}
+	FRotator operator-(const FRotator& R) const {
+		return FRotator(Pitch - R.Pitch, Yaw - R.Yaw, Roll - R.Roll);
+	}
+};
+
+struct FQuat {
+public:
+	double X;
+	double Y;
+	double Z;
+	double W;
+
+	FQuat() = default;
+	explicit FQuat(double InX, double InY, double InZ = 0.0, double InW = 0.0)
+		: X(InX), Y(InY), Z(InZ), W(InW)
+	{ }
+	explicit FQuat(const FQuat& InQ)
+		: X(InQ.X), Y(InQ.Y), Z(InQ.Z), W(InQ.W)
+	{ }
+
+	//double Dot(const FVector& V2) const {
+	//	return X * V2.X + Y * V2.Y + Z * V2.Z;
+	//}
+	//FQuat operator*(double Scale) const {
+	//	return FQuat(X * Scale, Y * Scale, Z * Scale, W * Scale);
+	//}
+	//FQuat operator/(double Scale) const {
+	//	const double RScale = 1.f / Scale;
+	//	return FQuat(X * RScale, Y * RScale, Z * RScale, W * RScale);
+	//}
+	//FQuat operator+(double A) const {
+	//	return FQuat(X + A, Y + A, Z + A);
+	//}
+	//FQuat operator-(double A) const {
+	//	return FQuat(X - A, Y - A, Z - A);
+	//}
+	//FQuat operator*(const FQuat& V) const {
+	//	return FQuat(X * V.X, Y * V.Y, Z * V.Z);
+	//}
+	//FQuat operator/(const FQuat& V) const {
+	//	return FQuat(X / V.X, Y / V.Y, Z / V.Z);
+	//}
+	//FQuat operator+(const FQuat& V) const {
+	//	return FQuat(X + V.X, Y + V.Y, Z + V.Z);
+	//}
+	//FQuat operator-(const FQuat& V) const {
+	//	return FQuat(X - V.X, Y - V.Y, Z - V.Z);
+	//}
+};
+
 
 #endif

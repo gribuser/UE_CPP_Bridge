@@ -1,5 +1,6 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
+#include "UE_BridgeBaseTypes.h"
 
 #if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
 #include <string>
@@ -13,8 +14,8 @@ static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES
 // We emulate base UE's FString functionality with std::string
 #if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
 
-//template< class ObjectType, ESPMode InMode >
 class FString : private std::string {
+public:
 	//using std::shared_ptr<ObjectType>::shared_ptr;
 	//FORCEINLINE TSharedPtr(ObjectType* ObjectPtr) : std::shared_ptr<ObjectType>(ObjectPtr);
 
@@ -49,7 +50,36 @@ class FString : private std::string {
 
 	//	return InExpression;
 	//}
+
+	/** Get the length of the string, excluding terminating character */
+	FORCEINLINE int32 Len() const {
+		return (int32)length();
+	}
+
+	/**
+	 * Get pointer to the string
+	 *
+	 * @Return Pointer to Array of TCHAR if Num, otherwise the empty string
+	 */
+	FORCEINLINE const char* operator*() const {
+		return data();
+	}
 };
 
+//using FTCHARToUTF8 /*please use StringCast<UTF8CHAR>(PtrToTChar) instead.")*/ = TStringConversion<UE::Core::Private::FTCHARToUTF8_Convert>;
+//using FUTF8ToTCHAR /*please use StringCast<TCHAR>(PtrToUTF8Char) instead.")*/ = TStringConversion<FUTF8ToTCHAR_Convert>;
+//
+//#define TCHAR_TO_ANSI(str) /*please use StringCast<ANSICHAR>(PtrToTChar) instead.")*/ (ANSICHAR*)StringCast<ANSICHAR>(static_cast<const TCHAR*>(str)).Get()
+//#define ANSI_TO_TCHAR(str) /*please use StringCast<TCHAR>(PtrToAnsiChar) instead.")*/ (TCHAR*)StringCast<TCHAR>(static_cast<const ANSICHAR*>(str)).Get()
+//#define TCHAR_TO_UTF8(str) /*please use StringCast<UTF8CHAR>(PtrToTChar) instead.")*/ (UTF8CHAR*)StringCast<UTF8CHAR>(PtrToTChar) (ANSICHAR*)FTCHARToUTF8((const TCHAR*)str).Get()
+//#define UTF8_TO_TCHAR(str) /*please use StringCast<TCHAR>(PtrToUTF8Char) instead.")*/ (TCHAR*)FUTF8ToTCHAR((const ANSICHAR*)str).Get()
+
+//#define TCHAR_TO_ANSI(str) (ANSICHAR*)StringCast<ANSICHAR>(static_cast<const TCHAR*>(str)).Get()
+//#define ANSI_TO_TCHAR(str) (TCHAR*)StringCast<TCHAR>(static_cast<const ANSICHAR*>(str)).Get()
+//#define TCHAR_TO_UTF8(str) (ANSICHAR*)FTCHARToUTF8((const TCHAR*)str).Get()
+//#define UTF8_TO_TCHAR(str) (TCHAR*)FUTF8ToTCHAR((const ANSICHAR*)str).Get()
+
+//#define TCHAR_TO_UTF8(str) 
+#define TCHAR_TO_UTF8
 
 #endif

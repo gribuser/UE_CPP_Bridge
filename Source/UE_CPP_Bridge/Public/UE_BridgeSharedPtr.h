@@ -26,16 +26,48 @@ enum class ESPMode : uint8_t
 };
 
 template< class ObjectType, ESPMode InMode >
-class TSharedPtr : private std::shared_ptr<ObjectType> {
+class TSharedPtr : public std::shared_ptr<ObjectType> {
 	using std::shared_ptr<ObjectType>::shared_ptr;
 	using std::shared_ptr<ObjectType>::use_count;
 	using std::shared_ptr<ObjectType>::reset;
 	using std::shared_ptr<ObjectType>::get;
 	//FORCEINLINE TSharedPtr(ObjectType* ObjectPtr) : std::shared_ptr<ObjectType>(ObjectPtr);
-
+public:
 	const bool IsValid() const { return !!this && use_count() > 0; }
 	void Reset() { reset(); }
 	ObjectType* Get() const { return get(); }
+};
+
+template< class ObjectType, ESPMode InMode >
+class TSharedRef: public TSharedPtr<ObjectType, InMode> {
+public:
+	explicit TSharedRef(ObjectType* ObjectPtr): TSharedPtr<ObjectType, InMode>(ObjectPtr) {
+		static_assert(ObjectPtr != nullptr, "TSharedRef cannot take null-object");
+
+	}
+};
+
+template< class ObjectType, ESPMode InMode >
+class TSharedFromThis: public std::enable_shared_from_this<ObjectType> {
+	using std::enable_shared_from_this<ObjectType>::shared_from_this;
+public:
+	const bool IsValid() const { return !!this && shared_from_this().use_count() > 0; }
+	void Reset() { shared_from_this().reset(); }
+	ObjectType* Get() const { return shared_from_this().get(); }
+};
+
+template< class ObjectType, ESPMode InMode >
+class TWeakPtr: public std::weak_ptr<ObjectType> {
+	using std::weak_ptr<ObjectType>::lock;
+	using std::weak_ptr<ObjectType>::use_count;
+	using std::weak_ptr<ObjectType>::reset;
+	//FORCEINLINE TSharedPtr(ObjectType* ObjectPtr) : std::shared_ptr<ObjectType>(ObjectPtr);
+public:
+	const bool IsValid() const { return !!this && use_count() > 0; }
+	void Reset() { reset(); }
+	TSharedPtr<ObjectType, InMode> Pin() { return lock(); }
+	//ObjectType* Get() const { return get(); }
+
 };
 
 #endif

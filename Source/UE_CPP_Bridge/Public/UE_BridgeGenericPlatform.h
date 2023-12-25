@@ -1,12 +1,7 @@
 #pragma once
 //#include "UE_CPP_Bridge_Setup.h"
 
-#ifndef P2P_BUILD_FOR_STANDALONE_SERVER
-#define P2P_BUILD_FOR_STANDALONE_SERVER 0
-#endif
-
-
-#if P2P_BUILD_FOR_STANDALONE_SERVER
+#ifdef P2P_BUILD_FOR_STANDALONE_SERVER
 
 #ifdef _WIN32
   #include "WindowsPlatform.h"
