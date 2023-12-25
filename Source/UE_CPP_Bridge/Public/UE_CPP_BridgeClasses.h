@@ -1,6 +1,7 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
 #include "UE_BridgeBaseTypes.h"
+#include "UE_BridgeMisc.h"
 #include "UE_BridgeArray.h"
 #include "UE_BridgeMap.h"
 #include "UE_BridgeSet.h"
