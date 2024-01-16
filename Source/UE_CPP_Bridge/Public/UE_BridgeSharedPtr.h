@@ -27,21 +27,23 @@ enum class ESPMode : uint8_t
 
 template< class ObjectType, ESPMode InMode >
 class TSharedPtr : public std::shared_ptr<ObjectType> {
-	using std::shared_ptr<ObjectType>::shared_ptr;
-	using std::shared_ptr<ObjectType>::use_count;
-	using std::shared_ptr<ObjectType>::reset;
-	using std::shared_ptr<ObjectType>::get;
+	typedef typename std::shared_ptr<ObjectType> Super;
+	using Super::shared_ptr; // Inheriting constructors
+	//using std::shared_ptr<ObjectType>::use_count;
+	//using std::shared_ptr<ObjectType>::reset;
+	//using std::shared_ptr<ObjectType>::get;
 	//FORCEINLINE TSharedPtr(ObjectType* ObjectPtr) : std::shared_ptr<ObjectType>(ObjectPtr);
 public:
-	const bool IsValid() const { return !!this && use_count() > 0; }
-	void Reset() { reset(); }
-	ObjectType* Get() const { return get(); }
+	explicit TSharedPtr(const ObjectType* ObjectPtr): Super(ObjectPtr) {}
+	const bool IsValid() const { return !!this && Super::use_count() > 0; }
+	void Reset() { Super::reset(); }
+	ObjectType* Get() const { return Super::get(); }
 };
 
 template< class ObjectType, ESPMode InMode >
 class TSharedRef: public TSharedPtr<ObjectType, InMode> {
 public:
-	explicit TSharedRef(ObjectType* ObjectPtr): TSharedPtr<ObjectType, InMode>(ObjectPtr) {
+	explicit TSharedRef(const ObjectType* ObjectPtr): TSharedPtr<ObjectType, InMode>(ObjectPtr) {
 		static_assert(ObjectPtr != nullptr, "TSharedRef cannot take null-object");
 
 	}
