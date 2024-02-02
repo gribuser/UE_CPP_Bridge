@@ -14,15 +14,20 @@ public:
 	using TArray<InElementType>::TArray;
 	bool ThreadSafeContains(const InElementType& Item) const {
 		BeginRead();
-		bool Out = this->Contains(Item);
+		const bool Out = this->Contains(Item);
 		EndRead();
 		return Out;
 	}
 	size_t ThreadSafeAdd(const InElementType& Item) {
 		BeginWrite();
-		size_t Out = this->Add(Item);
+		const size_t Out = this->Add(Item);
 		EndWrite();
 		return Out;
+	}
+	void ThreadSafeRemoveAtSwap(size_t Index) {
+		BeginWrite();
+		this->RemoveAtSwap(Index);
+		EndWrite();
 	}
 	size_t SubstituteOrAdd(const InElementType& Item, const InElementType& Replaceable = NULL) {
 		UE_CPP_BRIDGE_DEV_TRAP(IsLocked());
