@@ -40,6 +40,7 @@ public:
 	}
 	void Reserve(size_t N) { reserve(N); }
 	void SetNum(size_t N) { resize(N); }
+	void SetNumZeroed(size_t N) { reserve(N); }
 
 	// Hacked here, could break
 	InElementType* GetData() const { return (InElementType*)data(); }
