@@ -139,5 +139,7 @@ public:
 		}
 		return nullptr;
 	}
+
+	bool Remove(const KeyT& Val) { return erase(Val); }
 };
 #endif
