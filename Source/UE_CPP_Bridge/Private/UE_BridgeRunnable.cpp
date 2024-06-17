@@ -63,11 +63,13 @@ ThreadWorker::~ThreadWorker() {
 		Terminate();
 	}
 }
-
+#pragma warning (push, 3)
+#pragma warning (disable : 4996)
 void ThreadWorker::SetName(std::wstring AName) {
 	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converterter;
 	ThreadName = converterter.to_bytes(AName);
 }
+#pragma warning (pop)
 
 void ThreadWorker::Start() {
 	check(Thread == NULL);
