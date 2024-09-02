@@ -93,8 +93,8 @@ template<typename KeyT, typename ValueT,
 	typename BucketT = P2P_Pair<KeyT, ValueT>
 >
 class TMap: public llvm::DenseMap<KeyT, ValueT, KeyInfoT, BucketT> {
-public:
 	using DenseMapT = llvm::DenseMap<KeyT, ValueT, KeyInfoT, BucketT>;
+public:
 	using DenseMapT::DenseMap;
 
 	//TMap() = default;
@@ -113,33 +113,37 @@ public:
 	ValueT& Add(const KeyT& Key, ValueT&& InVal) {
 		auto Pair = DenseMapT::try_emplace(Key, InVal);
 		if (!Pair.second)
-			Pair.first.getSecond() = std::move(InVal);
-		return Pair.first.getSecond();
+			Pair.first->getSecond() = std::move(InVal);
+		return Pair.first->getSecond();
 	}
 
 	ValueT& Emplace(KeyT&& Key, ValueT&& InVal) {
 		auto Pair = DenseMapT::try_emplace(Key, InVal);
 		if (!Pair.second)
-			Pair.first.getSecond() = std::move(InVal);
-		return Pair.first.getSecond();
+			Pair.first->getSecond() = std::move(InVal);
+		return Pair.first->getSecond();
 	}
 
 	ValueT* Find(const KeyT& Key) {
 		//return DenseMapT::find(Key);
 		auto Iter = this->find(Key);
 		if (Iter != this->end()) {
-			return Iter->second;
+			return &Iter->second;
 		}
 		return nullptr;
 	}
 	const ValueT* Find(const KeyT& Key) const {
 		auto Iter = this->find(Key);
 		if (Iter != this->end()) {
-			return Iter->second;
+			return &Iter->second;
 		}
 		return nullptr;
 	}
 
-	bool Remove(const KeyT& Val) { return erase(Val); }
+	bool IsEmpty() const { return this->IsEmpty(); }
+	uint32 Num() const { return this->size(); }
+
+	bool Remove(const KeyT& Val) { return DenseMapT::erase(Val); }
+	void Reset() { DenseMapT::clear(); }
 };
 #endif
