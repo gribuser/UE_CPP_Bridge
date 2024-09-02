@@ -16,7 +16,7 @@ static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES
 
 class FString : private std::string {
 public:
-	//using std::shared_ptr<ObjectType>::shared_ptr;
+	using std::string::string;
 	//FORCEINLINE TSharedPtr(ObjectType* ObjectPtr) : std::shared_ptr<ObjectType>(ObjectPtr);
 
 /**
