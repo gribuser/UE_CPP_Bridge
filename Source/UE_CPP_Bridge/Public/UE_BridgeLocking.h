@@ -29,7 +29,7 @@ const int64 TrapIgnoresLocksAfter = 10000000 * 2;		// must be dubugger? We ignor
 
 class UE_CPP_BRIDGE_API FThreadsafeReadable {
 private:
-	mutable std::atomic<std::uint32_t> ReadersNum;
+	mutable std::atomic<std::int32_t> ReadersNum = 0;
 	mutable std::recursive_mutex WriteLock;
 public:
 	FThreadsafeReadable() {}
@@ -105,8 +105,8 @@ public:
 #endif
 		}
 	}
-	bool FreeState() {
-		return ReadersNum == 0
+	bool FreeState() const {
+		return ReadersNum.load() == 0
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 			&& LockedBy == ZeroThread
 #endif
@@ -119,14 +119,13 @@ public:
 	bool IsLocked(bool OkVal = true) const {
 		return LockedBy == std::this_thread::get_id();
 	}
-	bool IsLockedRead(bool OkVal = true) const {
-		// not 100% guarantee ReadersNum means THIS thread had a read-lock, but should do for now
-		return LockedBy == std::this_thread::get_id() || ReadersNum > 0;
-	}
 #else
 	bool IsLocked(bool OkVal = true) const {return OkVal;}
-	bool IsLockedRead(bool OkVal = true) const {return OkVal;}
 #endif
+	bool IsLockedRead(bool OkVal = true) const {
+		// Not 100% guarantee ReadersNum means THIS thread had a read-lock, but statistics should fix it
+		return ReadersNum.load() > 0;
+	}
 
 	void BeginWrite() const;
 
@@ -160,21 +159,18 @@ public:
 		Section->BeginRead();
 	}
 	~FReadableScopeLockRead() {
-		if (Section != NULL) { Section->EndRead(); }
+		Section->EndRead();
 	}
-	void Release() { Section->EndRead(); Section = NULL; }
 };
 class UE_CPP_BRIDGE_API FReadableScopeLockWrite{
 public:
 	const FThreadsafeReadable* Section;
 	FReadableScopeLockWrite(const FThreadsafeReadable* ASection) :Section(ASection) {
-		check(Section);
 		Section->BeginWrite();
 	}
 	~FReadableScopeLockWrite() {
-		if (Section != NULL) { Section->EndWrite(); }
+		Section->EndWrite();
 	}
-	void Release() { Section->EndWrite(); Section = NULL; }
 };
 std::list<std::thread::id> UE_CPP_BRIDGE_API WhoIsLocking(const FThreadsafeReadable* Caller);
 };

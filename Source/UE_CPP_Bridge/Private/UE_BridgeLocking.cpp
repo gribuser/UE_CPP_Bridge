@@ -16,7 +16,11 @@ void FThreadsafeReadable::BeginRead() const {
 		LockIn(this, false);
 #endif
 		AcquireLock();
-		ReadersNum++;
+		#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+		const int32_t DEBUG_CurVal = ReadersNum.load();
+		check(DEBUG_CurVal == 0 || DEBUG_CurVal > 0 && LastReader != std::this_thread::get_id());
+		#endif
+		++ReadersNum;
 		#if WITH_ADDITIONAL_LOCKING_VARS == 1
 		LastReader = std::this_thread::get_id();
 		#endif
@@ -25,9 +29,14 @@ void FThreadsafeReadable::BeginRead() const {
 }
 
 void FThreadsafeReadable::EndRead() const {
-	ReadersNum--;
 	#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+	const int32_t DEBUG_CurVal = ReadersNum.load();
+	check(DEBUG_CurVal > 0);
+	#endif
+	--ReadersNum;
+#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 	LockOut(this);
+	LastReader = {};
 	#endif
 }
 
@@ -40,7 +49,7 @@ void FThreadsafeReadable::BeginWrite() const {
 	#if WITH_LONG_LOCKING_TRAPS == 1
 	int64 WaitStartedAt = FDateTime::UtcNow().GetTicks();
 	#endif
-	while (ReadersNum > 0) {
+	while (ReadersNum.load() > 0) {
 		FPlatformProcess::Sleep(0.00001);
 		#if WITH_LONG_LOCKING_TRAPS == 1
 		int64 Now = FDateTime::UtcNow().GetTicks();
