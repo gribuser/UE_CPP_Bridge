@@ -53,6 +53,14 @@ public:
 		return *this;
 	}
 };
+template <typename T>
+void CopyArrayOfArrays(const TArray<TArray<T>>& From, TArray<TArray<T>>& To) {
+	To.Reset();
+	To.SetNumZeroed(From.Num());
+	for (int i = 0; i < From.Num(); ++i) {
+		To[i] = From[i];
+	}
+}
 
 template<typename InKeyType, typename InElementType>
 class TThreadedMap: public TMap<InKeyType, InElementType>, public FThreadsafeReadable {
