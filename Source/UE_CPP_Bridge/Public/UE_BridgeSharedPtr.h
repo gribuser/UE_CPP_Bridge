@@ -13,13 +13,14 @@ static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES
 // We emulate base UE's TSharedPtr functionality with std::shared_ptr
 #if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
 
+namespace UE_CPP_Bridge {
+
 /**
  * ESPMode is used select between either 'fast' or 'thread safe' shared pointer types.
  * This is only used by templates at compile time to generate one code path or another.
  */
 // PJ: These modes do nothing. They are here only for compatibility
-enum class ESPMode : uint8_t
-{
+enum class ESPMode : uint8_t {
 	/** Forced to be not thread-safe. */
 	NotThreadSafe = 0,
 
@@ -48,13 +49,13 @@ class TSharedRef: public TSharedPtr<ObjectType, InMode> {
 public:
 	explicit TSharedRef(ObjectType* ObjectPtr): TSharedPtr<ObjectType, InMode>(ObjectPtr) {
 		static_assert(!std::is_null_pointer_v<ObjectType*>, "TSharedRef cannot take null-object");
-
 	}
 };
 
 template< class ObjectType, ESPMode InMode = ESPMode::NotThreadSafe >
 class TSharedFromThis: public std::enable_shared_from_this<ObjectType> {
 	using std::enable_shared_from_this<ObjectType>::shared_from_this;
+
 public:
 	const bool IsValid() const { return !!this && shared_from_this().use_count() > 0; }
 	void Reset() { shared_from_this().reset(); }
@@ -72,7 +73,8 @@ public:
 	void Reset() { reset(); }
 	TSharedPtr<ObjectType, InMode> Pin() { return lock(); }
 	//ObjectType* Get() const { return get(); }
-
 };
+
+} // namespace UE_CPP_Bridge
 
 #endif

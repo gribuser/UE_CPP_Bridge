@@ -1,6 +1,6 @@
 #include "UE_BridgeMisc.h"
 
-#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
+#if UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE == 1
 
 
 int32 FMath::RandRange(int32 Min, int32 Max) {

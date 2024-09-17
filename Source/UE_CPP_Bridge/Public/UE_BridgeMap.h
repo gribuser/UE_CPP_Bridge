@@ -81,8 +81,6 @@ struct DenseMapInfo<T>: llvm::DenseMapInfo<unsigned short> {};
 template <typename T> requires(std::is_same_v<T, unsigned long>)
 struct DenseMapInfo<T>: llvm::DenseMapInfo<unsigned long> {};
 
-}; // namespace UE_CPP_Bridge
-
 //llvm::DenseMap<typename KeyT, typename ValueT,
 //	typename KeyInfoT = DenseMapInfo<KeyT>,
 //	typename BucketT = detail::DenseMapPair<KeyT, ValueT>>
@@ -116,6 +114,11 @@ public:
 			Pair.first->getSecond() = std::move(InVal);
 		return Pair.first->getSecond();
 	}
+	ValueT& Add(const KeyT& Key, ValueT& InVal) {
+		auto Pair = DenseMapT::try_emplace(Key, InVal);
+		if (!Pair.second) Pair.first.getSecond() = std::move(InVal);
+		return Pair.first.getSecond();
+	}
 
 	ValueT& Emplace(KeyT&& Key, ValueT&& InVal) {
 		auto Pair = DenseMapT::try_emplace(Key, InVal);
@@ -145,5 +148,31 @@ public:
 
 	bool Remove(const KeyT& Val) { return DenseMapT::erase(Val); }
 	void Reset() { DenseMapT::clear(); }
+	uint32 Num() { return this->size(); }
+
+	int32 GetKeys(TArray<KeyT>& OutKeys) const {
+		OutKeys.Reset();
+		if (this->getNumEntries() == 0 && this->getNumTombstones() == 0) return 0;
+
+		//TSet<KeyType> VisitedKeys;
+		//VisitedKeys.Reserve(Num());
+		OutKeys.Reserve(this->size());
+
+		for (BucketT *P = this->getBuckets(), *E = this->getBucketsEnd(); P != E; ++P) {
+			if (!KeyInfoT::isEqual(P->getFirst(), this->EmptyKey)) {
+				if (!KeyInfoT::isEqual(P->getFirst(), this->TombstoneKey)) {
+					//if (!VisitedKeys.Contains(It->Key)) {
+						OutKeys.Add(P->getFirst());
+					//	VisitedKeys.Add(P->getFirst());
+					//}
+				}
+			}
+		}
+		return OutKeys.Num();
+	}
+
 };
+
+} // namespace UE_CPP_Bridge
+
 #endif

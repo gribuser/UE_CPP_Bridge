@@ -1,18 +1,18 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
 
-#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
+#if UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE == 1
 #include <cstdint>
 #include <chrono>
 #include <thread>
-#elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 2
-#include "GenericPlatform/GenericPlatformProcess.h"
+#elif UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE == 2
+	#include "GenericPlatform/GenericPlatformProcess.h"
 #else
-static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
+static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE description for details")
 #endif
 
 // We emulate base UE's u/int8,16,32,64 functionality with <cstdint>
-#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
+#if UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE == 1
 
 //~ Unsigned base types
 

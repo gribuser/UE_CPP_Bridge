@@ -2,17 +2,19 @@
 #include "UE_CPP_Bridge_Setup.h"
 #include "UE_BridgeBaseTypes.h"
 
-#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
-#include <string>
+#if UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE == 1
+	#include <string>
 #include <cstdio>
-#elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 2
-#include "Containers/UnrealString.h"
+#elif UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE == 2
+	#include "Containers/UnrealString.h"
 #else
 static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
 #endif
 
 // We emulate base UE's FString functionality with std::string
-#if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
+#if UE_CPP_BRIDGE_DEFAULT_CLASSES_MODE == 1
+
+namespace UE_CPP_Bridge {
 
 class FString : private std::string {
 public:
@@ -65,6 +67,8 @@ public:
 		return data();
 	}
 };
+
+} // namespace UE_CPP_Bridge
 
 //using FTCHARToUTF8 /*please use StringCast<UTF8CHAR>(PtrToTChar) instead.")*/ = TStringConversion<UE::Core::Private::FTCHARToUTF8_Convert>;
 //using FUTF8ToTCHAR /*please use StringCast<TCHAR>(PtrToUTF8Char) instead.")*/ = TStringConversion<FUTF8ToTCHAR_Convert>;

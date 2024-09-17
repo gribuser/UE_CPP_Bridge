@@ -7,14 +7,22 @@
 #elif UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 2
 #include "Containers/Set.h"
 #else
-static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
+static_assert(
+	0,
+	"Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE description for details")
 #endif
 
 // We emulate base UE's TMap functionality with std::*
 #if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
-template<typename InElementType>
-class TSet: public std::set<InElementType> {
+
+namespace UE_CPP_Bridge {
+
+template <typename InElementType>
+class TSet : public std::set<InElementType> {
 public:
 	using TSet<InElementType>::TSet;
 };
+
+} // namespace UE_CPP_Bridge
+
 #endif
