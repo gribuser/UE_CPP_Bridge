@@ -13,18 +13,18 @@ static_assert(0, "Unknown implementation ID, see UE_CPP_BRIDGE_CONTAINER_CLASSES
 // We emulate base UE's TQueue functionality with std::*
 #if UE_CPP_BRIDGE_CONTAINER_CLASSES_MODE == 1
 
+namespace UE_CPP_Bridge {
+
 /**
  * Enumerates concurrent queue modes.
  */
-enum class EQueueMode
-{
+enum class EQueueMode {
 	/** Multiple-producers, single-consumer queue. */
 	Mpsc,
 
 	/** Single-producer, single-consumer queue. */
 	Spsc
 };
-
 
 /**
  * Template for queues.
@@ -39,15 +39,13 @@ enum class EQueueMode
  *
  * @param T The type of items stored in the queue.
  */
-template<typename T, EQueueMode DontCare = EQueueMode::Mpsc>
+template <typename T, EQueueMode DontCare = EQueueMode::Mpsc>
 class TQueue {
 public:
 	using FElementType = T;
 
 	/** Default constructor. */
-	TQueue() {
-		Head = Tail = new TNode();
-	}
+	TQueue() { Head = Tail = new TNode(); }
 
 	/** Destructor. */
 	~TQueue() {
@@ -67,13 +65,10 @@ public:
 	 * @note To be called only from consumer thread.
 	 * @see Empty, Enqueue, IsEmpty, Peek, Pop
 	 */
-	bool Dequeue(FElementType& OutItem)
-	{
+	bool Dequeue(FElementType& OutItem) {
 		TNode* Popped = Tail->NextNode;
 
-		if (Popped == nullptr) {
-			return false;
-		}
+		if (Popped == nullptr) { return false; }
 
 		OutItem = std::move(Popped->Item);
 		TNode* OldTail = Tail;
@@ -91,7 +86,8 @@ public:
 	 * @see Dequeue, IsEmpty, Peek, Pop
 	 */
 	void Empty() {
-		while (Pop());
+		while (Pop())
+			;
 	}
 
 	/**
@@ -105,9 +101,7 @@ public:
 	bool Enqueue(const FElementType& Item) {
 		TNode* NewNode = new TNode(Item);
 
-		if (NewNode == nullptr) {
-			return false;
-		}
+		if (NewNode == nullptr) { return false; }
 
 		// https://en.cppreference.com/w/cpp/atomic/atomic/compare_exchange
 		// put the current value of Head into OldHead
@@ -117,8 +111,7 @@ public:
 		// is no longer what's stored in OldHead
 		// (some other thread must have inserted a node just now)
 		// then put that new Head into OldHead and try again
-		while (!Head.compare_exchange_weak(OldHead, NewNode,
-																			 std::memory_order_release,
+		while (!Head.compare_exchange_weak(OldHead, NewNode, std::memory_order_release,
 																			 std::memory_order_relaxed))
 			; // the body of the loop is empty
 
@@ -136,17 +129,13 @@ public:
 	 * @note To be called only from producer thread(s).
 	 * @see Dequeue, Pop
 	 */
-	bool Enqueue(FElementType&& Item)
-	{
+	bool Enqueue(FElementType&& Item) {
 		TNode* NewNode = new TNode(std::move(Item));
 
-		if (NewNode == nullptr) {
-			return false;
-		}
+		if (NewNode == nullptr) { return false; }
 
 		TNode* OldHead = Head.load(std::memory_order_relaxed);
-		while (!Head.compare_exchange_weak(OldHead, NewNode,
-																			 std::memory_order_release,
+		while (!Head.compare_exchange_weak(OldHead, NewNode, std::memory_order_release,
 																			 std::memory_order_relaxed))
 			; // the body of the loop is empty
 		OldHead->NextNode = NewNode;
@@ -160,9 +149,7 @@ public:
 	 * @note To be called only from consumer thread.
 	 * @see Dequeue, Empty, Peek, Pop
 	 */
-	bool IsEmpty() const {
-		return (Tail->NextNode == nullptr);
-	}
+	bool IsEmpty() const { return (Tail->NextNode == nullptr); }
 
 	/**
 	 * Peeks at the queue's tail item without removing it.
@@ -172,11 +159,8 @@ public:
 	 * @note To be called only from consumer thread.
 	 * @see Dequeue, Empty, IsEmpty, Pop
 	 */
-	bool Peek(FElementType& OutItem) const
-	{
-		if (Tail->NextNode == nullptr) {
-			return false;
-		}
+	bool Peek(FElementType& OutItem) const {
+		if (Tail->NextNode == nullptr) { return false; }
 
 		OutItem = Tail->NextNode->Item;
 
@@ -191,19 +175,13 @@ public:
 	 *
 	 * @return Pointer to the item, or nullptr if queue is empty
 	 */
-	FElementType* Peek()
-	{
-		if (Tail->NextNode == nullptr) {
-			return nullptr;
-		}
+	FElementType* Peek() {
+		if (Tail->NextNode == nullptr) { return nullptr; }
 
 		return &Tail->NextNode->Item;
 	}
 
-	FORCEINLINE const FElementType* Peek() const
-	{
-		return const_cast<TQueue*>(this)->Peek();
-	}
+	FORCEINLINE const FElementType* Peek() const { return const_cast<TQueue*>(this)->Peek(); }
 
 	/**
 	 * Removes the item from the tail of the queue.
@@ -212,13 +190,10 @@ public:
 	 * @note To be called only from consumer thread.
 	 * @see Dequeue, Empty, Enqueue, IsEmpty, Peek
 	 */
-	bool Pop()
-	{
+	bool Pop() {
 		TNode* Popped = Tail->NextNode;
 
-		if (Popped == nullptr) {
-			return false;
-		}
+		if (Popped == nullptr) { return false; }
 
 		TNode* OldTail = Tail;
 		Tail = Popped;
@@ -229,10 +204,8 @@ public:
 	}
 
 private:
-
 	/** Structure for the internal linked list. */
-	struct TNode
-	{
+	struct TNode {
 		/** Holds a pointer to the next node in the list. */
 		TNode* volatile NextNode;
 
@@ -240,34 +213,30 @@ private:
 		FElementType Item;
 
 		/** Default constructor. */
-		TNode() : NextNode(nullptr) { }
+		TNode() : NextNode(nullptr) {}
 
 		/** Creates and initializes a new node. */
-		explicit TNode(const FElementType& InItem)
-			: NextNode(nullptr)
-			, Item(InItem)
-		{ }
+		explicit TNode(const FElementType& InItem) : NextNode(nullptr), Item(InItem) {}
 
 		/** Creates and initializes a new node. */
-		explicit TNode(FElementType&& InItem)
-			: NextNode(nullptr)
-			, Item(std::move(InItem))
-		{ }
+		explicit TNode(FElementType&& InItem) : NextNode(nullptr), Item(std::move(InItem)) {}
 	};
 
 	///** Holds a pointer to the head of the list. */
 	std::atomic<TNode*> Head;
-	//MS_ALIGN(16) TNode* volatile Head GCC_ALIGN(16);
+	// MS_ALIGN(16) TNode* volatile Head GCC_ALIGN(16);
 
 	/** Holds a pointer to the tail of the list. */
 	TNode* Tail;
 
 private:
-
 	/** Hidden copy constructor. */
 	TQueue(const TQueue&) = delete;
 
 	/** Hidden assignment operator. */
 	TQueue& operator=(const TQueue&) = delete;
 };
+
+} // namespace UE_CPP_Bridge
+
 #endif
