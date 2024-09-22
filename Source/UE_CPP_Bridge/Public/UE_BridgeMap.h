@@ -90,45 +90,70 @@ template<typename KeyT, typename ValueT,
 	typename KeyInfoT = UE_CPP_Bridge::DenseMapInfo<KeyT>,
 	typename BucketT = P2P_Pair<KeyT, ValueT>
 >
-class TMap: public llvm::DenseMap<KeyT, ValueT, KeyInfoT, BucketT> {
+class TDenseMap: public llvm::DenseMap<KeyT, ValueT, KeyInfoT, BucketT> {
 	using DenseMapT = llvm::DenseMap<KeyT, ValueT, KeyInfoT, BucketT>;
 public:
 	using DenseMapT::DenseMap;
 
-	//TMap() = default;
-	//TMap(std::initializer_list<TPair<const KeyT&, const ValueT&>> Vals) {
+	//TDenseMap() = default;
+	//TDenseMap(std::initializer_list<TPair<const KeyT&, const ValueT&>> Vals) {
 	//	this->init(Vals.size());
 	//	this->insert(Vals.begin(), Vals.end());
 	//}
 
-	bool Contains(const KeyT& Key) {
-		return DenseMapT::contains(Key);
+	bool Contains(const KeyT& Key) const {
+		return this->contains(Key);
 	}
 
 	ValueT& Add(KeyT&& Key, ValueT&& InVal) {
 		return Emplace(Key, InVal);
 	}
+	ValueT& Add(const KeyT& Key, const ValueT& InVal) {
+		auto Pair = this->try_emplace(Key, InVal);
+		if (!Pair.second) Pair.first->getSecond() = InVal;
+		return Pair.first->getSecond();
+	}
 	ValueT& Add(const KeyT& Key, ValueT&& InVal) {
-		auto Pair = DenseMapT::try_emplace(Key, InVal);
+		auto Pair = this->try_emplace(Key, InVal);
 		if (!Pair.second)
 			Pair.first->getSecond() = std::move(InVal);
 		return Pair.first->getSecond();
 	}
 	ValueT& Add(const KeyT& Key, ValueT& InVal) {
-		auto Pair = DenseMapT::try_emplace(Key, InVal);
+		auto Pair = this->try_emplace(Key, InVal);
 		if (!Pair.second) Pair.first.getSecond() = std::move(InVal);
 		return Pair.first.getSecond();
 	}
 
+	void Append(TDenseMap<KeyT, ValueT>&& OtherMap) {
+		this->reserve(this->size() + OtherMap.size());
+		for (auto& Pair : OtherMap) {
+			this->Add(std::move(Pair.Key), std::move(Pair.Value));
+		}
+
+		OtherMap.clear();
+	}
+	void Append(const TDenseMap<KeyT, ValueT>& OtherMap) {
+		this->reserve(this->size() + OtherMap.size());
+		for (auto& Pair : OtherMap) {
+			this->Add(Pair.Key, Pair.Value);
+		}
+	}
+
 	ValueT& Emplace(KeyT&& Key, ValueT&& InVal) {
-		auto Pair = DenseMapT::try_emplace(Key, InVal);
-		if (!Pair.second)
-			Pair.first->getSecond() = std::move(InVal);
+		auto Pair = this->insert_or_assign(Key, InVal);
+		//auto Pair = this->try_emplace(Key, InVal);
+		//if (!Pair.second)
+		//	Pair.first->getSecond() = std::move(InVal);
 		return Pair.first->getSecond();
 	}
 
+	ValueT& Emplace(const KeyT& Key) {
+		return this->getOrInsertDefault(Key);
+	}
+
 	ValueT* Find(const KeyT& Key) {
-		//return DenseMapT::find(Key);
+		//return this->find(Key);
 		auto Iter = this->find(Key);
 		if (Iter != this->end()) {
 			return &Iter->second;
@@ -146,8 +171,9 @@ public:
 	bool IsEmpty() const { return this->IsEmpty(); }
 	uint32 Num() const { return this->size(); }
 
-	bool Remove(const KeyT& Val) { return DenseMapT::erase(Val); }
-	void Reset() { DenseMapT::clear(); }
+	bool Remove(const KeyT& Val) { return this->erase(Val); }
+	void Reserve(int32 Number) { this->reserve(Number); }
+	void Reset() { this->clear(); }
 	uint32 Num() { return this->size(); }
 
 	int32 GetKeys(TArray<KeyT>& OutKeys) const {

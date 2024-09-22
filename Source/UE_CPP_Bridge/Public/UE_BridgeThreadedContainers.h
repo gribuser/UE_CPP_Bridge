@@ -55,9 +55,9 @@ public:
 };
 
 template<typename InKeyType, typename InElementType>
-class TThreadedMap: public TMap<InKeyType, InElementType>, public FThreadsafeReadable {
+class TThreadedMap: public TDenseMap<InKeyType, InElementType>, public FThreadsafeReadable {
 public:
-	using TMap<InKeyType, InElementType>::TMap;
+	using TDenseMap<InKeyType, InElementType>::TDenseMap;
 	bool ThreadSafeContains(const InKeyType& Item) const {
 		BeginRead();
 		bool Out = this->Contains(Item);
