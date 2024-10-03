@@ -24,6 +24,12 @@ public:
 		EndWrite();
 		return Out;
 	}
+	size_t ThreadSafeAddUnique(const InElementType& Item) {
+		BeginWrite();
+		const size_t Out = this->ThreadSafeAddUnique(Item);
+		EndWrite();
+		return Out;
+	}
 	void ThreadSafeRemoveAtSwap(size_t Index) {
 		BeginWrite();
 		this->RemoveAtSwap(Index);
@@ -39,6 +45,14 @@ public:
 		}
 		return this->Add(Item);
 	}
+
+	size_t ThreadSafeSubstituteOrAdd(const InElementType& Item, const InElementType& Replaceable = NULL) {
+		BeginWrite();
+		const size_t Out = SubstituteOrAdd(Item, Replaceable);
+		EndWrite();
+		return Out;
+	}
+
 	bool bIsReallyEmpty( const InElementType& Empty = NULL){
 		for (size_t i = 0; i < this->Num(); i++) {
 			if ((*this)[i] != Empty) { return false; }
