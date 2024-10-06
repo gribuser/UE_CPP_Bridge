@@ -26,13 +26,18 @@ public:
 	}
 	size_t ThreadSafeAddUnique(const InElementType& Item) {
 		BeginWrite();
-		const size_t Out = this->ThreadSafeAddUnique(Item);
+		const size_t Out = this->AddUnique(Item);
 		EndWrite();
 		return Out;
 	}
 	void ThreadSafeRemoveAtSwap(size_t Index) {
 		BeginWrite();
 		this->RemoveAtSwap(Index);
+		EndWrite();
+	}
+	void ThreadSafeRemoveSwap(InElementType El) {
+		BeginWrite();
+		this->RemoveSwap(El);
 		EndWrite();
 	}
 	size_t SubstituteOrAdd(const InElementType& Item, const InElementType& Replaceable = NULL) {
