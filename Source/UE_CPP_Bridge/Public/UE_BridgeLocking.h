@@ -115,17 +115,21 @@ public:
 	void BeginRead() const;
 	void EndRead() const;
 
+	bool IsLocked_R_or_W(bool OkVal = true) {
+		return IsLocked(OkVal) || IsLockedRead(OkVal);
+	}
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS
 	bool IsLocked(bool OkVal = true) const {
 		return LockedBy == std::this_thread::get_id();
 	}
-#else
-	bool IsLocked(bool OkVal = true) const {return OkVal;}
-#endif
 	bool IsLockedRead(bool OkVal = true) const {
 		// Not 100% guarantee ReadersNum means THIS thread had a read-lock, but statistics should fix it
 		return ReadersNum.load() > 0;
 	}
+#else
+	bool IsLocked(bool OkVal = true) const {return OkVal;}
+	bool IsLockedRead(bool OkVal = true) const { return OkVal; }
+#endif
 
 	void BeginWrite() const;
 
