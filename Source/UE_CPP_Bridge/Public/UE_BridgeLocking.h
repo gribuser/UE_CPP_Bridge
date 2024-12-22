@@ -108,7 +108,7 @@ public:
 	bool FreeState() const {
 		return ReadersNum.load() == 0
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
-			&& LockedBy == ZeroThread
+			&& LockedBy == ZeroThread || LockedBy == std::this_thread::get_id()
 #endif
 			;
 	}
