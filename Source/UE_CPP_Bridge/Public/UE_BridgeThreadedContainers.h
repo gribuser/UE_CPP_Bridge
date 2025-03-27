@@ -24,6 +24,12 @@ public:
 		EndWrite();
 		return Out;
 	}
+	InElementType ThreadSafePop() {
+		BeginWrite();
+		const InElementType Out = this->Pop(EAllowShrinking::No);
+		EndWrite();
+		return Out;
+	}
 	size_t ThreadSafeAddUnique(const InElementType& Item) {
 		BeginWrite();
 		const size_t Out = this->AddUnique(Item);
