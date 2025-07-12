@@ -76,6 +76,27 @@ public:
 		if (bMultiLockEnabled) { LocksNum++; }
 #endif
 	}
+	bool TryWriteLock() const {
+		bool bLockedOK = WriteLock.try_lock();
+		if (bLockedOK) {
+			#if WITH_LONG_LOCKING_TRAPS == 1
+			if (LocksNum == 0) {
+				LockedAt = FDateTime::UtcNow().GetTicks();
+				int64 LockingTook = LockedAt - TryLockAt;
+				UE_CPP_BRIDGE_DEV_TRAP(LockingTook < TrapLongLocksAt || LockingTook >= TrapIgnoresLocksAfter);
+				UE_CPP_BRIDGE_DEV_TRAP(bMultiLockEnabled || LockingTook < TrapShortLocksAt || LockingTook > TrapIgnoresLocksAfter);
+			}
+			#endif
+			#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
+			check(LockedBy == ZeroThread || bMultiLockEnabled);
+			LockedBy = std::this_thread::get_id();
+			#endif
+			#if WITH_ADDITIONAL_LOCKING_VARS == 1
+			if (bMultiLockEnabled) { LocksNum++; }
+			#endif
+		}
+		return bLockedOK;
+	}
 	void ReleaseLock() const {
 #if WITH_ADDITIONAL_LOCKING_VARS == 1
 		if (bMultiLockEnabled) { LocksNum--; }
