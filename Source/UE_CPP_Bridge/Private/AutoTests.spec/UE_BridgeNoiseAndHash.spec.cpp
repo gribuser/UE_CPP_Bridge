@@ -7,7 +7,7 @@
 //
 //BEGIN_DEFINE_SPEC(UE_CPP_Bridge_NoiseAndHashes,
 //									"PrimitiveNoise.NoiseAndHashes",
-//									EAutomationTestFlags::ProductFilter |EAutomationTestFlags::ClientContext)
+//									EAutomationTestFlags::ProductFilter | EAutomationTestFlags_ApplicationContextMask)
 //	bool B = true;
 //END_DEFINE_SPEC(UE_CPP_Bridge_NoiseAndHashes)
 //
