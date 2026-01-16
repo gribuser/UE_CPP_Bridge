@@ -4,7 +4,7 @@
 #include <codecvt>
 
 #ifdef _WIN32
-#include "Windows/MinWindows.h"
+#include "Windows/WindowsHWrapper.h"
 #elif defined(__linux__)
 #include <sys/prctl.h>
 #endif

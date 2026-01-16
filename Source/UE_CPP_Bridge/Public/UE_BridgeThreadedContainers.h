@@ -30,6 +30,13 @@ public:
 		EndWrite();
 		return Out;
 	}
+	InElementType ThreadSafeShift() {
+		BeginWrite();
+		const InElementType Out = (*this)[0];
+		this->RemoveAt(0, EAllowShrinking::No);
+		EndWrite();
+		return Out;
+	}
 	size_t ThreadSafeAddUnique(const InElementType& Item) {
 		BeginWrite();
 		const size_t Out = this->AddUnique(Item);
