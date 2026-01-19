@@ -24,6 +24,11 @@ public:
 		EndWrite();
 		return Out;
 	}
+	void ThreadSafeReset() {
+		BeginWrite();
+		this->Reset(0);
+		EndWrite();
+	}
 	InElementType ThreadSafePop() {
 		BeginWrite();
 		const InElementType Out = this->Pop(EAllowShrinking::No);
