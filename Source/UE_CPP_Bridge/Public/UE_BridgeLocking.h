@@ -77,6 +77,9 @@ public:
 #endif
 	}
 	bool TryWriteLock() const {
+		#if WITH_LONG_LOCKING_TRAPS == 1
+		int64 TryLockAt = FDateTime::UtcNow().GetTicks();
+		#endif
 		bool bLockedOK = WriteLock.try_lock();
 		if (bLockedOK) {
 			#if WITH_LONG_LOCKING_TRAPS == 1
@@ -136,7 +139,7 @@ public:
 	void BeginRead() const;
 	void EndRead() const;
 
-	bool IsLocked_R_or_W(bool OkVal = true) {
+	bool IsLocked_R_or_W(bool OkVal = true) const {
 		return IsLocked(OkVal) || IsLockedRead(OkVal);
 	}
 #if WITH_THREAD_INTERLOCKING_DIAGNOSTICS

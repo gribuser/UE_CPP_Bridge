@@ -98,9 +98,9 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 	// This thread had locked this mutex already
 	UE_CPP_BRIDGE_DEV_TRAP(Caller->bMultiLockEnabled || ExistingLockN == INDEX_NONE || !(*RWRec)[ExistingLockN] && !Write);
 
-	// If this is a uniq lock it's ok. And if it's all about read-locking, you can stack it
-	// as much as you like. Otherwise we need some checks here and we are not going to
-	// log anything (as we have the lock already and new lock will not be set)
+	// If this is an uniq lock it's ok. And if it's all about read-locking, you can stack it
+	// as much as you like. Otherwise, we need some checks here, and we are not going to
+	// lock anything (as we have the lock already and new lock will not be set)
 	if (ExistingLockN != INDEX_NONE && (Write || (*RWRec)[ExistingLockN])) {
 
 		// You can't upgrade read-only lock to read-write lock!
@@ -120,16 +120,17 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 		const FThreadsafeReadable* PrevLocker = (*ThreadRec)[i];
 		bool PrevWrite = (*RWRec)[i];
 		for (auto& AnotherLocker : LocksLog) {
-			int ANotherLockedMyPrevN = AnotherLocker.second.Find(PrevLocker);
-			if (ANotherLockedMyPrevN == INDEX_NONE) continue;
-			// Readlocks do not block each other!
-			if (!PrevWrite && !RWLog[AnotherLocker.first][ANotherLockedMyPrevN]) continue;
+			int AnotherLockedMyPrevN = AnotherLocker.second.Find(PrevLocker);
+			if (AnotherLockedMyPrevN == INDEX_NONE) { continue; }
 
-			int ANotherLockedMyCurrentN = AnotherLocker.second.Find(Caller);
-			if (ANotherLockedMyCurrentN == INDEX_NONE) continue;
-			if (!Write && !RWLog[AnotherLocker.first][ANotherLockedMyCurrentN]) continue;
+			// Read locks do not block each other!
+			if (!PrevWrite && !RWLog[AnotherLocker.first][AnotherLockedMyPrevN]) { continue; }
+
+			int AnotherLockedMyCurrentN = AnotherLocker.second.Find(Caller);
+			if (AnotherLockedMyCurrentN == INDEX_NONE) { continue; }
+			if (!Write && !RWLog[AnotherLocker.first][AnotherLockedMyCurrentN]) { continue; }
 			// Cross-thread deadlock: thread A locks [1] then [2], thread B locks [2] then [1]
-			UE_CPP_BRIDGE_DEV_TRAP(ANotherLockedMyCurrentN >= ANotherLockedMyPrevN);
+			UE_CPP_BRIDGE_DEV_TRAP(AnotherLockedMyCurrentN >= AnotherLockedMyPrevN);
 			//UE_CPP_BRIDGE_DEV_TRAP(!(
 			//	AnotherLocker.second.Contains(Caller)
 			//	&& AnotherLocker.second.Contains(PrevLocker)
@@ -138,8 +139,8 @@ void LockIn(const FThreadsafeReadable* Caller, bool Write) {
 	}
 	ThreadRec->Add(Caller);
 	RWRec->Add(Write);
-	// Just to force compiler to link WhoIsLocking for immediate call
-	if (0) WhoIsLocking(NULL);
+	// Just to force compiler to link WhoIsLocking for debug call in the window "immediate"
+	if (MyThreadID == std::thread::id{}) { WhoIsLocking(NULL); }
 }
 
 std::list<std::thread::id> WhoIsLocking(const FThreadsafeReadable* Caller) {
@@ -148,10 +149,8 @@ std::list<std::thread::id> WhoIsLocking(const FThreadsafeReadable* Caller) {
 		for (const FThreadsafeReadable* LockPointer : Thread.second) {
 			if (Caller == LockPointer) {
 				Out.push_back(Thread.first);
-//				goto NEXTTHREAD;
 			}
 		}
-//		NEXTTHREAD:;
 	}
 	return Out;
 }
