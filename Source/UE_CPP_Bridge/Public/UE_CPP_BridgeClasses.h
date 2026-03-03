@@ -1,5 +1,7 @@
 #pragma once
 #include "UE_CPP_Bridge_Setup.h"
+#include "UE_BridgeBaseTypes.h"
+#include "TDenseMap.h"
 #include "UE_BridgeArray.h"
 #include "UE_BridgeMap.h"
 #include "UE_BridgeSet.h"
@@ -15,5 +17,5 @@
 #include "HAL/RunnableThread.h"
 #include "Misc/ByteSwap.h"
 #include "Containers/UnrealString.h"
-#include "GenericPlatform/GenericPlatformProcess.h"
+//#include "GenericPlatform/GenericPlatformProcess.h"
 

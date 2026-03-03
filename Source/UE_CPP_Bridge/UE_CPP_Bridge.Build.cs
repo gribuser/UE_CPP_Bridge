@@ -11,7 +11,8 @@ public class UE_CPP_Bridge : ModuleRules
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
-				Path.Combine(ModuleDirectory,"Public")
+				Path.Combine(ModuleDirectory,"Public"),
+				Path.Combine(ModuleDirectory, "../ThirdParty/llvm/include"),
 				//Path.Combine(ModuleDirectory,"Public"),
 				// ... add public include paths required here ...
 			}
@@ -20,7 +21,7 @@ public class UE_CPP_Bridge : ModuleRules
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
-				Path.Combine(ModuleDirectory,"Private")
+				Path.Combine(ModuleDirectory,"Private"),
 				// ... add other private include paths required here ...
 			}
 			);
