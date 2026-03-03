@@ -100,9 +100,9 @@ void CopyArrayOfArrays(const TArray<TArray<T>>& From, TArray<TArray<T>>& To) {
 }
 
 template<typename InKeyType, typename InElementType>
-class TThreadedMap: public TDenseMap<InKeyType, InElementType>, public FThreadsafeReadable {
+class TThreadedMap: public TMap<InKeyType, InElementType>, public FThreadsafeReadable {
 public:
-	using TDenseMap<InKeyType, InElementType>::TDenseMap;
+	using TMap<InKeyType, InElementType>::TMap;
 	bool ThreadSafeContains(const InKeyType& Item) const {
 		BeginRead();
 		bool Out = this->Contains(Item);
