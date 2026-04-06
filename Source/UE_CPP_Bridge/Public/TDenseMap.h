@@ -151,7 +151,7 @@ public:
 		return this->contains(Key);
 	}
 
-	ValueT& Add(KeyT&& Key, ValueT&& InVal) {
+	ValueT& Add(const KeyT&& Key, ValueT&& InVal) {
 		return Emplace(Key, InVal);
 	}
 	ValueT& Add(const KeyT& Key, const ValueT& InVal) {
@@ -186,7 +186,12 @@ public:
 		}
 	}
 
-	ValueT& Emplace(KeyT&& Key, ValueT&& InVal) {
+	//ValueT& Emplace(const KeyT&& Key, const ValueT&& InVal) {
+	//	auto Pair = this->insert_or_assign(Key, InVal);
+	//	return Pair.first->getSecond();
+	//}
+
+	ValueT& Emplace(const KeyT& Key, const ValueT& InVal) {
 		auto Pair = this->insert_or_assign(Key, InVal);
 		return Pair.first->getSecond();
 	}
