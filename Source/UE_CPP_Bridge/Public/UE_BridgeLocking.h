@@ -41,9 +41,9 @@ public:
 	int DebugLogN = 0;
 	mutable int LocksNum = 0;
 	static const std::thread::id ZeroThread;
-	mutable std::thread::id LastReader;
-	mutable std::thread::id LockedBy;
-	mutable std::thread::id UnlockedBy;
+	mutable std::thread::id LastReader{};
+	mutable std::thread::id LockedBy{};
+	mutable std::thread::id UnlockedBy{};
 	FThreadsafeReadable(int ADebugLogN):DebugLogN(ADebugLogN) {}
 #endif
 

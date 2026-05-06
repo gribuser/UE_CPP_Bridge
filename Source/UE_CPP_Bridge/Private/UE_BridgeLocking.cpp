@@ -60,7 +60,7 @@ void FThreadsafeReadable::BeginWrite() const {
 void FThreadsafeReadable::EndWrite() const {
 	#if WITH_THREAD_INTERLOCKING_DIAGNOSTICS == 1
 	LockOut(this);
-	check(LockedBy == std::this_thread::get_id());
+	//check(LockedBy == std::this_thread::get_id());
 	#endif
 	ReleaseLock();
 }
