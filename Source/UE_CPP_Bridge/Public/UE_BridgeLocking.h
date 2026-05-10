@@ -197,10 +197,14 @@ class UE_CPP_BRIDGE_API FReadableScopeLockWrite{
 public:
 	const FThreadsafeReadable* Section;
 	FReadableScopeLockWrite(const FThreadsafeReadable* ASection) :Section(ASection) {
-		Section->BeginWrite();
+		if (Section != NULL) {
+			Section->BeginWrite();
+		}
 	}
 	~FReadableScopeLockWrite() {
-		Section->EndWrite();
+		if (Section != NULL) {
+			Section->EndWrite();
+		}
 	}
 };
 std::list<std::thread::id> UE_CPP_BRIDGE_API WhoIsLocking(const FThreadsafeReadable* Caller);
