@@ -37,6 +37,7 @@ private:
 public:
 	FThreadsafeReadable() {}
 #if WITH_ADDITIONAL_LOCKING_VARS == 1
+	void EnableMultiLock() { bMultiLockEnabled = true; }
 	mutable bool bMultiLockEnabled = false;
 	int DebugLogN = 0;
 	mutable int LocksNum = 0;
@@ -45,6 +46,8 @@ public:
 	mutable std::thread::id LockedBy{};
 	mutable std::thread::id UnlockedBy{};
 	FThreadsafeReadable(int ADebugLogN):DebugLogN(ADebugLogN) {}
+#else
+	void EnableMultiLock() {}
 #endif
 
 
