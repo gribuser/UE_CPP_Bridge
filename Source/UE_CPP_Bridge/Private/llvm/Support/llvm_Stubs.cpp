@@ -1,5 +1,6 @@
-
 #include <string>
+#include "UE_CPP_Bridge_Setup.h"
+#include "llvm/ADT/Twine.h"
 
 namespace llvm {
 // DenseMap сам весь в .h файлах. Но тянет зависимости из llvm/Support.
